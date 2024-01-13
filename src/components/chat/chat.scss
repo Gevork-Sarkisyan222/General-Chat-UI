@@ -1,0 +1,82 @@
+.Chat {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+
+  .Wrapper {
+    width: 920px;
+    height: 680px;
+    background-color: white;
+    border-radius: 15px;
+    padding: 20px;
+    position: relative;
+    background: var(--White-white, #fff);
+    // background-image: url('https://png.pngtree.com/background/20230518/original/pngtree-beautiful-sky-with-clouds-in-it-picture-image_2647603.jpg');
+
+    box-shadow: 0px 5.045px 25.225px 0px rgba(0, 0, 0, 0.15);
+    border: 3px solid rgb(209, 209, 209);
+
+    .chat-area {
+      display: flex;
+      flex-direction: column;
+      padding: 40px;
+      gap: 27px;
+      overflow: scroll;
+      height: 338px;
+
+      .Chat-Section {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+
+        .Message-Section {
+          width: 145px;
+          height: 100%;
+          border-radius: 0px 12px 12px 12px;
+          background: #efefef;
+          padding-left: 10px;
+          display: flex;
+          align-items: center;
+          position: relative;
+
+          .name {
+            position: absolute;
+            top: -13px;
+            font-size: 15px;
+            font-weight: 600;
+          }
+          .role {
+            position: absolute;
+            top: -6px;
+            font-size: 10px;
+            left: 74px;
+            color: grey;
+            font-weight: 400;
+          }
+          .text-place {
+            .text {
+              margin-top: 22px;
+            }
+          }
+        }
+      }
+    }
+
+    header {
+      text-align: center;
+
+      .line {
+        width: 100%;
+        height: 2px;
+        background: rgb(214, 214, 214);
+        box-shadow: 2px black;
+      }
+    }
+  }
+}
+
+.scroll-place {
+  width: 100%;
+  height: 100%;
+}
