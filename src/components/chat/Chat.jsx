@@ -53,6 +53,7 @@ const styleForGroupModal = {
 
 function Chat() {
   const { background } = useSelector((state) => state.background);
+  const { mobileBackBG } = useSelector((state) => state);
   const randomOnline = useMemo(() => Math.floor(Math.random() * 30), []);
   const [messages, setMessages] = useState([]);
   const [users, setUsers] = useState([]);
@@ -173,7 +174,10 @@ function Chat() {
       </div>
       <div className="Chat">
         <div
-          style={{ backgroundImage: smallDevice && isAuthenticated ? pageBackground : '' }}
+          style={{
+            backgroundImage: smallDevice && isAuthenticated ? mobileBackBG.mobileBackBG : '',
+            color: mobileBackBG.mobileBackBG ? 'white' : 'black',
+          }}
           className="Wrapper">
           <header>
             <h2 style={{ fontSize: '20px' }}>
