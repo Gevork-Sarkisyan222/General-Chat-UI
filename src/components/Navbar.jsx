@@ -32,6 +32,7 @@ import PageBgmodal from './pageBg/PageBGmodal';
 import { setBackground } from '../redux/slice/backgroundSlice';
 import { setPageBackground } from '../redux/slice/pageBackgroundSlice';
 import useMediaQuery from '@mui/material/useMediaQuery';
+import MobileSelectBackground from './mobile/MobileSelectBackground';
 
 const styleForBGModal = {
   position: 'absolute',
@@ -128,9 +129,23 @@ export default function MenuAppBar() {
   const [layout, setLayout] = React.useState(undefined);
   const [scroll, setScroll] = React.useState(true);
 
+  const [mobileLayout, setMobileLayout] = React.useState(undefined);
+  const [mobileScroll, setMobileScroll] = React.useState(true);
+
+  const handleForMobileBackground = () => {
+    setMobileLayout('center');
+    setChatInfo(null);
+  };
+
   return (
     <>
       <PageBgmodal layout={layout} setLayout={setLayout} scroll={scroll} setScroll={setScroll} />
+      <MobileSelectBackground
+        mobileLayout={mobileLayout}
+        setMobileLayout={setMobileLayout}
+        mobileScroll={mobileScroll}
+        setMobileScroll={setMobileScroll}
+      />
       <ProfileModalJoy
         aria-labelledby="modal-title"
         aria-describedby="modal-desc"
@@ -175,17 +190,21 @@ export default function MenuAppBar() {
               open={Boolean(chatInfo)}
               onClose={handleCloseChatInfo}>
               {isAuthenticated && (
-                <MenuItem onClick={handleOpenBGModal}>Поменять фон чата</MenuItem>
-              )}
-              {isAuthenticated && (
-                <MenuItem
-                  onClick={() => {
-                    setLayout('center');
-                    setChatInfo(null);
-                  }}>
-                  Поменять задний фон
+                <MenuItem onClick={smallDevice ? handleForMobileBackground : handleOpenBGModal}>
+                  Поменять фон чата
                 </MenuItem>
               )}
+              {smallDevice
+                ? ''
+                : isAuthenticated && (
+                    <MenuItem
+                      onClick={() => {
+                        setLayout('center');
+                        setChatInfo(null);
+                      }}>
+                      Поменять задний фон
+                    </MenuItem>
+                  )}
               {currentUser?.role === 'Администратор' || currentUser?.role === 'Супер Админ' ? (
                 <>
                   <MenuItem onClick={clearChat}>Очистить чат</MenuItem>

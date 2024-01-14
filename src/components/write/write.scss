@@ -63,7 +63,7 @@
     transition: transform var(--timing) ease;
   }
   .form:focus-within {
-    border-radius: var(--after-border-radius);
+    // border-radius: var(--after-border-radius); isig e ereg or poxecir krnas poxel
   }
 
   input:focus {
