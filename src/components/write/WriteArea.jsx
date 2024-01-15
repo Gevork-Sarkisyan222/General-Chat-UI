@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import './write.scss';
 import AddReactionIcon from '@mui/icons-material/AddReaction';
 import ClipIcon from '@mui/icons-material/AttachFile';
@@ -9,6 +9,7 @@ import AttachFileIcon from '@mui/icons-material/AttachFile';
 import SendIcon from '@mui/icons-material/Send';
 
 function WriteArea({ createMessage, setMessage, message }) {
+  const inputFileRef = useRef();
   const clearInputIcon = () => {
     setMessage('');
   };
@@ -20,13 +21,25 @@ function WriteArea({ createMessage, setMessage, message }) {
     }
   };
 
+  const handleAddImage = async (event) => {
+    const formData = new FormData();
+    const file = event.target.files[0];
+    formData.append('image', file);
+    console.log(formData);
+  };
+  const handleRemoveImage = async (event) => {};
+
   return (
     <div className="WriteArea">
+      <input type="file" ref={inputFileRef} onChange={handleAddImage} hidden />
       <Input
         startDecorator={
           <div style={{ display: 'flex', gap: '5px' }}>
             <AddReactionIcon sx={{ cursor: 'pointer' }} />{' '}
-            <AttachFileIcon sx={{ cursor: 'pointer' }} />
+            <AttachFileIcon
+              onClick={() => inputFileRef.current.click()}
+              sx={{ cursor: 'pointer' }}
+            />
           </div>
         }
         endDecorator={

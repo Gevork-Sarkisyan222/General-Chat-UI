@@ -85,7 +85,13 @@ function ChatSection({ message, isEdited }) {
               : ''}
           </p>
           <div className="text-place">
+            {/* https://chat-server-f146.onrender.com${imageUrl} */}
             <p className="text">{message.message}</p>
+            {/* {message?.image && (
+              <div className="image">
+                <img style={{ width: '100px' }} src={message?.image} alt="" />
+              </div>
+            )} */}
           </div>
         </div>
         <div
