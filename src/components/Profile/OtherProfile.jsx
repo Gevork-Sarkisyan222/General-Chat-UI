@@ -30,7 +30,7 @@ function Profile({ user }) {
       <ModalClose variant="plain" sx={{ m: 1 }} />
       <div style={{ display: 'flex', justifyContent: 'center' }}>
         <Avatar
-          sx={{ width: '140px', height: '140px' }}
+          sx={{ width: '140px', height: '140px', cursor: 'pointer' }}
           src={user?.avatarUrl ? user?.avatarUrl : '/broken-image.jpg'}
           alt={user?.name}
         />

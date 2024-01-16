@@ -11,6 +11,8 @@ import Modal from '@mui/material/Modal';
 import TextField from '@mui/material/TextField';
 import BorderColorIcon from '@mui/icons-material/BorderColor';
 import { useSelector } from 'react-redux';
+import ProfileModalJoy from '@mui/joy/Modal';
+import OtherProfile from '.././Profile/OtherProfile';
 
 const style = {
   position: 'absolute',
@@ -49,8 +51,24 @@ function ChatSection({ message, isEdited }) {
 
   const { background } = useSelector((state) => state.background);
 
+  const [profileModal, setProfileModal] = useState(false);
+  const handleOpenProfileModal = () => {
+    setProfileModal(true);
+  };
+  const handleCloseProfileModal = () => {
+    setProfileModal(false);
+  };
+
   return (
     <>
+      <ProfileModalJoy
+        aria-labelledby="modal-title"
+        aria-describedby="modal-desc"
+        open={profileModal}
+        onClose={handleCloseProfileModal}
+        sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+        <OtherProfile user={message.user} />
+      </ProfileModalJoy>
       <Modal
         open={editModal}
         onClose={handleCloseEditModal}
@@ -74,6 +92,7 @@ function ChatSection({ message, isEdited }) {
       </Modal>
       <div className="Chat-Section">
         <Avatar
+          onClick={handleOpenProfileModal}
           alt={message.user.name}
           src={message.user.avatarUrl ? message.user.avatarUrl : '/broken-image.jpg'}
         />
@@ -85,13 +104,12 @@ function ChatSection({ message, isEdited }) {
               : ''}
           </p>
           <div className="text-place">
-            {/* https://chat-server-f146.onrender.com${imageUrl} */}
             <p className="text">{message.message}</p>
-            {/* {message?.image && (
+            {message?.image && (
               <div className="image">
                 <img style={{ width: '100px' }} src={message?.image} alt="" />
               </div>
-            )} */}
+            )}
           </div>
         </div>
         <div

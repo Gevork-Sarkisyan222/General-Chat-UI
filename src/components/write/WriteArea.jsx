@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import './write.scss';
 import AddReactionIcon from '@mui/icons-material/AddReaction';
 import ClipIcon from '@mui/icons-material/AttachFile';
@@ -7,8 +7,16 @@ import Input from '@mui/joy/Input';
 import { Button } from '@mui/joy';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
 import SendIcon from '@mui/icons-material/Send';
+import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
+import Modal from '@mui/joy/Modal';
+import ModalClose from '@mui/joy/ModalClose';
+import Typography from '@mui/joy/Typography';
+import Sheet from '@mui/joy/Sheet';
+import app from '../../firebase';
+import Emojis from '../emojis/Emojis';
 
 function WriteArea({ createMessage, setMessage, message }) {
+  const [open, setOpen] = React.useState(false);
   const inputFileRef = useRef();
   const clearInputIcon = () => {
     setMessage('');
@@ -21,66 +29,134 @@ function WriteArea({ createMessage, setMessage, message }) {
     }
   };
 
-  const handleAddImage = async (event) => {
-    const formData = new FormData();
-    const file = event.target.files[0];
-    formData.append('image', file);
-    console.log(formData);
+  // adding into firebase storage
+
+  const [image, setImage] = useState(undefined);
+  const [imageUrl, setImageUrl] = useState('');
+  console.log('this imageUrl', imageUrl);
+
+  const uploadFile = (file) => {
+    const storage = getStorage(app);
+    const fileName = new Date().getTime() + file.name;
+    const storageRef = ref(storage, fileName);
+
+    const uploadTask = uploadBytesResumable(storageRef, file);
+
+    uploadTask.on(
+      'state_changed',
+      (snapshot) => {
+        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        console.log('Upload is ' + progress + '% done');
+        switch (snapshot.state) {
+          case 'paused':
+            console.log('Upload is paused');
+            break;
+          case 'running':
+            console.log('Upload is running');
+            break;
+        }
+      },
+      (error) => {
+        console.warn(error);
+      },
+      () => {
+        getDownloadURL(uploadTask.snapshot.ref)
+          .then((downloadURL) => {
+            console.log('File available at', downloadURL);
+            alert('Файл успешно выбран');
+            setImageUrl(downloadURL);
+          })
+          .catch((error) => {
+            console.error('Error getting download URL:', error);
+          });
+      },
+    );
   };
-  const handleRemoveImage = async (event) => {};
+
+  useEffect(() => {
+    image && uploadFile(image);
+  }, [image]);
+
+  const handleUpload = async (e) => {
+    e.preventDefault();
+    try {
+      await axios.post('/chat/message', { image: imageUrl });
+      setImageUrl('');
+    } catch (error) {
+      console.error('Ошибка при отправке файла:', error);
+    }
+  };
 
   return (
-    <div className="WriteArea">
-      <input type="file" ref={inputFileRef} onChange={handleAddImage} hidden />
-      <Input
-        startDecorator={
-          <div style={{ display: 'flex', gap: '5px' }}>
-            <AddReactionIcon sx={{ cursor: 'pointer' }} />{' '}
-            <AttachFileIcon
-              onClick={() => inputFileRef.current.click()}
-              sx={{ cursor: 'pointer' }}
-            />
-          </div>
-        }
-        endDecorator={
-          message && (
-            <Button onClick={createMessage}>
-              <SendIcon />
-            </Button>
-          )
-        }
-        placeholder="Напишите сообщение"
-        variant="soft"
-        value={message}
-        type="text"
-        required=""
-        onChange={(e) => setMessage(e.target.value)}
-        onKeyDown={handleKeyDown}
-        sx={{
-          '--Input-radius': '0px',
-          '--Input-gap': '8px',
-          borderBottom: '2px solid',
-          borderColor: 'neutral.outlinedBorder',
-          '&:hover': {
-            borderColor: 'neutral.outlinedHoverBorder',
-          },
-          '&::before': {
-            border: '1px solid var(--Input-focusedHighlight)',
-            transform: 'scaleX(0)',
-            left: 0,
-            right: 0,
-            bottom: '-2px',
-            top: 'unset',
-            transition: 'transform .15s cubic-bezier(0.1,0.9,0.2,1)',
-            borderRadius: 0,
-          },
-          '&:focus-within::before': {
-            transform: 'scaleX(1)',
-          },
-        }}
-      />
-      {/* </div> */}
-    </div>
+    <>
+      <Modal
+        aria-labelledby="modal-title"
+        aria-describedby="modal-desc"
+        open={open}
+        onClose={() => setOpen(false)}
+        sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+        <Emojis />
+      </Modal>
+      <div className="WriteArea">
+        <input
+          accept="image/*"
+          type="file"
+          ref={inputFileRef}
+          onChange={(e) => setImage(e.target.files[0])}
+          hidden
+        />
+        <Input
+          startDecorator={
+            <div style={{ display: 'flex', gap: '5px' }}>
+              <AddReactionIcon onClick={() => setOpen(true)} sx={{ cursor: 'pointer' }} />{' '}
+              <AttachFileIcon
+                onClick={() => inputFileRef.current.click()}
+                sx={{ cursor: 'pointer' }}
+              />
+            </div>
+          }
+          endDecorator={
+            (message || imageUrl) && (
+              <Button
+                onClickCapture={(e) => imageUrl && handleUpload(e)}
+                onClick={() => message && createMessage()}>
+                <SendIcon />
+              </Button>
+            )
+          }
+          placeholder="Напишите сообщение"
+          variant="soft"
+          value={message}
+          type="text"
+          required=""
+          onChange={(e) => setMessage(e.target.value)}
+          onKeyDown={handleKeyDown}
+          sx={{
+            '--Input-radius': '0px',
+            '--Input-gap': '8px',
+            borderBottom: '2px solid',
+            borderColor: 'neutral.outlinedBorder',
+            '&:hover': {
+              borderColor: 'neutral.outlinedHoverBorder',
+            },
+            '&::before': {
+              border: '1px solid var(--Input-focusedHighlight)',
+              transform: 'scaleX(0)',
+              left: 0,
+              right: 0,
+              bottom: '-2px',
+              top: 'unset',
+              transition: 'transform .15s cubic-bezier(0.1,0.9,0.2,1)',
+              borderRadius: 0,
+            },
+            '&:focus-within::before': {
+              transform: 'scaleX(1)',
+            },
+          }}
+        />
+        {/* </div> */}
+      </div>
+    </>
   );
 }
 
