@@ -63,7 +63,7 @@ function WriteArea({ createMessage, setMessage, message }) {
         getDownloadURL(uploadTask.snapshot.ref)
           .then((downloadURL) => {
             console.log('File available at', downloadURL);
-            alert('Файл успешно выбран');
+            alert('Файл успешно выбран и загружен');
             setImageUrl(downloadURL);
           })
           .catch((error) => {
