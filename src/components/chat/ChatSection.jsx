@@ -92,6 +92,7 @@ function ChatSection({ message, isEdited }) {
       </Modal>
       <div className="Chat-Section">
         <Avatar
+          sx={{ cursor: 'pointer' }}
           onClick={handleOpenProfileModal}
           alt={message.user.name}
           src={message.user.avatarUrl ? message.user.avatarUrl : '/broken-image.jpg'}
