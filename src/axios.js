@@ -4,6 +4,8 @@ const instance = axios.create({
   baseURL: 'https://chat-server-un0w.onrender.com',
 });
 
+// simple commit
+
 instance.interceptors.request.use((config) => {
   config.headers.Authorization = window.localStorage.getItem('token');
   return config;
