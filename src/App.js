@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useState } from 'react';
 import Navbar from './components/Navbar';
 import './App.scss';
 import { Routes, Route } from 'react-router-dom';
@@ -9,9 +9,11 @@ import { fetchAuthMe } from './redux/slice/userSlice';
 import { useDispatch, useSelector } from 'react-redux';
 
 function App() {
+  const [messages, setMessages] = useState([]);
   const dispatch = useDispatch();
   const { pageBackground } = useSelector((state) => state.pageBackground);
   console.log(pageBackground);
+  const socket = useRef();
 
   React.useEffect(() => {
     dispatch(fetchAuthMe());
@@ -27,10 +29,13 @@ function App() {
 
   return (
     <div className="App">
-      <Navbar />
+      <Navbar setMessages={setMessages} socket={socket} />
 
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route
+          path="/"
+          element={<Home socket={socket} messages={messages} setMessages={setMessages} />}
+        />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
       </Routes>

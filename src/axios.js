@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const instance = axios.create({
-  baseURL: 'https://chat-server-f146.onrender.com',
+  baseURL: 'https://chat-server-un0w.onrender.com',
 });
 
 instance.interceptors.request.use((config) => {

@@ -7,8 +7,42 @@ import Sheet from '@mui/joy/Sheet';
 import TypographyJoy from '@mui/joy/Typography';
 import { format, register } from 'timeago.js';
 import ru from 'timeago.js/esm/lang/ru';
+import Badge from '@mui/material/Badge';
+import { styled } from '@mui/material/styles';
 
-function Profile({ user }) {
+const StyledBadge = styled(Badge)(({ theme }) => ({
+  '& .MuiBadge-badge': {
+    backgroundColor: '#44b700',
+    color: '#44b700',
+    boxShadow: `0 0 0 2px ${theme.palette.background.paper}`,
+    width: '20px',
+    height: '20px',
+    borderRadius: '20px',
+    '&::after': {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      width: '100%',
+      height: '100%',
+      borderRadius: '50%',
+      animation: 'ripple 1.2s infinite ease-in-out',
+      border: '1px solid currentColor',
+      content: '""',
+    },
+  },
+  '@keyframes ripple': {
+    '0%': {
+      transform: 'scale(.8)',
+      opacity: 1,
+    },
+    '100%': {
+      transform: 'scale(2.4)',
+      opacity: 0,
+    },
+  },
+}));
+
+function Profile({ user, alreadyOnline }) {
   register('ru', ru);
 
   const date = new Date(user?.createdAt);
@@ -29,11 +63,24 @@ function Profile({ user }) {
       }}>
       <ModalClose variant="plain" sx={{ m: 1 }} />
       <div style={{ display: 'flex', justifyContent: 'center' }}>
-        <Avatar
-          sx={{ width: '140px', height: '140px', cursor: 'pointer' }}
-          src={user?.avatarUrl ? user?.avatarUrl : '/broken-image.jpg'}
-          alt={user?.name}
-        />
+        {alreadyOnline ? (
+          <StyledBadge
+            overlap="circular"
+            anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+            variant="dot">
+            <Avatar
+              sx={{ width: '140px', height: '140px', cursor: 'pointer' }}
+              alt={user?.name}
+              src={user?.avatarUrl ? user?.avatarUrl : '/broken-image.jpg'}
+            />
+          </StyledBadge>
+        ) : (
+          <Avatar
+            sx={{ width: '140px', height: '140px', cursor: 'pointer' }}
+            src={user?.avatarUrl ? user?.avatarUrl : '/broken-image.jpg'}
+            alt={user?.name}
+          />
+        )}
       </div>
       <TypographyJoy
         component="h2"

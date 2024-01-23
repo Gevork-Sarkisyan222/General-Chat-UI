@@ -14,10 +14,14 @@ import Typography from '@mui/joy/Typography';
 import Sheet from '@mui/joy/Sheet';
 import app from '../../firebase';
 import Emojis from '../emojis/Emojis';
+import { useSelector } from 'react-redux';
 
-function WriteArea({ createMessage, setMessage, message }) {
+function WriteArea({ createMessage, setMessage, message, socket, setMessages, edit }) {
+  const { currentUser } = useSelector((state) => state.user);
+  const [arrivalImageMessage, setArrivalImageMessage] = useState(null);
   const [open, setOpen] = React.useState(false);
   const inputFileRef = useRef();
+
   const clearInputIcon = () => {
     setMessage('');
   };
@@ -80,12 +84,47 @@ function WriteArea({ createMessage, setMessage, message }) {
   const handleUpload = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('/chat/message', { image: imageUrl });
+      const res = await axios.post('/chat/message', { image: imageUrl });
+      socket.current.emit('uploadImage', {
+        selectedImage: imageUrl,
+        messageId: res.data?._id,
+        user: {
+          _id: currentUser?._id,
+          name: currentUser?.name,
+          role: currentUser?.role,
+          avatarUrl: currentUser?.avatarUrl,
+        },
+      });
       setImageUrl('');
     } catch (error) {
       console.error('Ошибка при отправке файла:', error);
     }
   };
+
+  useEffect(() => {
+    socket.current.on('uploadedImage', ({ selectedImage, messageId, user }) => {
+      setArrivalImageMessage({
+        image: selectedImage,
+        _id: messageId,
+        user: user,
+        createdAt: Date.now(),
+      });
+    });
+  }, [arrivalImageMessage]);
+
+  // upload file imageUrl
+  useEffect(() => {
+    arrivalImageMessage && setMessages((prev) => [...prev, arrivalImageMessage]);
+  }, [arrivalImageMessage]);
+
+  // useEffect(() => {
+  //   socket.current.on('uploadedImage', ({ selectedImage }) => {
+  //     console.log(selectedImage);
+  //     setMessages(selectedImage);
+  //   });
+  // }, [setMessages]);
+
+  console.log('message id arrival', arrivalImageMessage?._id);
 
   return (
     <>

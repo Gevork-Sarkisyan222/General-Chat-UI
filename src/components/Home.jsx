@@ -1,10 +1,10 @@
 import React from 'react';
 import Chat from './chat/Chat';
 
-function Home() {
+function Home({ socket, messages, setMessages }) {
   return (
     <>
-      <Chat />
+      <Chat messages={messages} setMessages={setMessages} socket={socket} />
     </>
   );
 }

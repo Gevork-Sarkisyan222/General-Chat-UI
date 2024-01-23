@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
@@ -54,18 +54,31 @@ const styleForBGModal = {
   overflow: 'auto',
 };
 
-export default function MenuAppBar() {
+export default function MenuAppBar({ socket, setMessages }) {
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [chatInfo, setChatInfo] = React.useState(null);
   const currentUser = useSelector((state) => state.user.currentUser);
   const isAuthenticated = useSelector(isAuthUser);
   const dispatch = useDispatch();
   const smallDevice = useMediaQuery('(max-width:600px)');
+  const [clickedCleared, setClickedCleared] = React.useState('noCleared');
+
+  useEffect(() => {
+    if (socket.current) {
+      socket.current.on('chatCleared', ({ userId }) => {
+        console.log(`Функция chatCleared сработало и ваш чат был очишен ${userId}`);
+        setMessages([]);
+      });
+    }
+  }, [clickedCleared === 'cleared']);
 
   const clearChat = async () => {
     const message = window.confirm('Вы действительно хотите очистить чат?');
     if (message) {
+      console.log('its our id gevs', currentUser?._id);
       await axios.delete('/chat/messages');
+      socket.current.emit('clearChat', { userId: currentUser?._id });
+      setClickedCleared('cleared');
       setChatInfo(null);
     }
   };
