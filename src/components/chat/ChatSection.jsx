@@ -211,7 +211,7 @@ function ChatSection({ message, isEdited, setMessages, socket, alreadyOnline }) 
           style={{
             background:
               message.user?._id === currentUser?._id
-                ? 'linear-gradient(0deg, #57ffe3 0%, #c2c2c2 100%)'
+                ? 'linear-gradient(0deg, #57ffe3 0%, #ededed 100%)'
                 : '#efefef',
           }}
           className="Message-Section">
