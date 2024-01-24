@@ -55,6 +55,7 @@ function ChatSection({ message, isEdited, setMessages, socket, alreadyOnline }) 
   const smallDevice = useMediaQuery('(max-width:500px)');
   const [edit, setEdit] = useState('');
   const [editModal, setEditModal] = useState(false);
+  const { currentUser } = useSelector((state) => state.user);
 
   const handleOpenEditModal = () => setEditModal(true);
   const handleCloseEditModal = () => setEditModal(false);
@@ -180,7 +181,11 @@ function ChatSection({ message, isEdited, setMessages, socket, alreadyOnline }) 
           </Button>
         </Box>
       </Modal>
-      <div className="Chat-Section">
+      <div
+        style={{
+          flexDirection: message.user?._id === currentUser?._id ? 'row-reverse' : '',
+        }}
+        className="Chat-Section">
         {alreadyOnline ? (
           <StyledBadge
             overlap="circular"
@@ -202,7 +207,9 @@ function ChatSection({ message, isEdited, setMessages, socket, alreadyOnline }) 
           />
         )}
 
-        <div className="Message-Section">
+        <div
+          style={{ background: message.user?._id === currentUser?._id ? '#85caff' : '#efefef' }}
+          className="Message-Section">
           <p className="name">{message.user?.name}</p>
           <p className="role">
             {message.user?.role === 'Администратор' || message.user?.role === 'Супер Админ'

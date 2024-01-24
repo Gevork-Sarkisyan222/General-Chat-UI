@@ -15,6 +15,7 @@ import Sheet from '@mui/joy/Sheet';
 import app from '../../firebase';
 import Emojis from '../emojis/Emojis';
 import { useSelector } from 'react-redux';
+import VoiceIcon from '@mui/icons-material/KeyboardVoice';
 
 function WriteArea({ createMessage, setMessage, message, socket, setMessages, edit }) {
   const { currentUser } = useSelector((state) => state.user);
@@ -152,6 +153,7 @@ function WriteArea({ createMessage, setMessage, message, socket, setMessages, ed
                 onClick={() => inputFileRef.current.click()}
                 sx={{ cursor: 'pointer' }}
               />
+              <VoiceIcon onClick={() => alert('В разработке')} sx={{ cursor: 'pointer' }} />
             </div>
           }
           endDecorator={
