@@ -12,6 +12,7 @@ import TextField from '@mui/material/TextField';
 import BorderColorIcon from '@mui/icons-material/BorderColor';
 import { useSelector } from 'react-redux';
 import ProfileModalJoy from '@mui/joy/Modal';
+import ImageViewModal from '@mui/joy/Modal';
 import OtherProfile from '.././Profile/OtherProfile';
 
 import Badge from '@mui/material/Badge';
@@ -111,8 +112,45 @@ function ChatSection({ message, isEdited, setMessages, socket, alreadyOnline }) 
     p: 4,
   };
 
+  const imageViewStyle = {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: smallDevice ? 240 : 400,
+    bgcolor: 'background.paper',
+    border: '2px solid #000',
+    boxShadow: 24,
+    p: 4,
+    display: 'flex',
+    justifyContent: 'center',
+  };
+
+  const [imageView, setImageView] = React.useState(false);
+  const [imageUrlView, setImageUrlView] = useState('');
+  const handleOpenImageView = (imageUrl) => {
+    setImageView(true);
+    setImageUrlView(imageUrl);
+  };
+  const handleCloseImageView = () => setImageView(false);
+
   return (
     <>
+      <ImageViewModal
+        open={imageView}
+        onClose={handleCloseImageView}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description">
+        <Box sx={imageViewStyle}>
+          <div className="modal-image">
+            <img
+              style={{ width: smallDevice ? '275px' : '424px', height: '273px' }}
+              src={imageUrlView}
+              alt="view image"
+            />
+          </div>
+        </Box>
+      </ImageViewModal>
       <ProfileModalJoy
         aria-labelledby="modal-title"
         aria-describedby="modal-desc"
@@ -174,8 +212,8 @@ function ChatSection({ message, isEdited, setMessages, socket, alreadyOnline }) 
           <div className="text-place">
             <p className="text">{message?.message}</p>
             {message?.image && (
-              <div className="image">
-                <img style={{ width: '100px' }} src={message?.image} alt="" />
+              <div onClick={() => handleOpenImageView(message?.image)} className="image">
+                <img style={{ width: '100px', cursor: 'pointer' }} src={message?.image} alt="" />
               </div>
             )}
           </div>
