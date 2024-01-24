@@ -208,7 +208,12 @@ function ChatSection({ message, isEdited, setMessages, socket, alreadyOnline }) 
         )}
 
         <div
-          style={{ background: message.user?._id === currentUser?._id ? '#85caff' : '#efefef' }}
+          style={{
+            background:
+              message.user?._id === currentUser?._id
+                ? 'linear-gradient(0deg, #57ffe3 0%, #c2c2c2 100%)'
+                : '#efefef',
+          }}
           className="Message-Section">
           <p className="name">{message.user?.name}</p>
           <p className="role">
