@@ -16,6 +16,7 @@ import app from '../../firebase';
 import Emojis from '../emojis/Emojis';
 import { useSelector } from 'react-redux';
 import VoiceIcon from '@mui/icons-material/KeyboardVoice';
+import useMediaQuery from '@mui/material/useMediaQuery';
 
 function WriteArea({ createMessage, setMessage, message, socket, setMessages, edit }) {
   const { currentUser } = useSelector((state) => state.user);
@@ -127,6 +128,8 @@ function WriteArea({ createMessage, setMessage, message, socket, setMessages, ed
 
   console.log('message id arrival', arrivalImageMessage?._id);
 
+  const smallDevice = useMediaQuery('(max-width:480px)');
+
   return (
     <>
       <Modal
@@ -147,13 +150,19 @@ function WriteArea({ createMessage, setMessage, message, socket, setMessages, ed
         />
         <Input
           startDecorator={
-            <div style={{ display: 'flex', gap: '5px' }}>
+            <div
+              style={{
+                display: 'flex',
+                gap: '5px',
+                // width: smallDevice && '65px',
+                // paddingLeft: smallDevice && '15px',
+              }}>
               <AddReactionIcon onClick={() => setOpen(true)} sx={{ cursor: 'pointer' }} />{' '}
               <AttachFileIcon
                 onClick={() => inputFileRef.current.click()}
                 sx={{ cursor: 'pointer' }}
               />
-              <VoiceIcon onClick={() => alert('В разработке')} sx={{ cursor: 'pointer' }} />
+              {/* <VoiceIcon onClick={() => alert('В разработке')} sx={{ cursor: 'pointer' }} /> */}
             </div>
           }
           endDecorator={
