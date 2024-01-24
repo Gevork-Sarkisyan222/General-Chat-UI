@@ -13,11 +13,10 @@ import BorderColorIcon from '@mui/icons-material/BorderColor';
 import { useSelector } from 'react-redux';
 import ProfileModalJoy from '@mui/joy/Modal';
 import OtherProfile from '.././Profile/OtherProfile';
-import { format, register } from 'timeago.js';
-import ru from 'timeago.js/esm/lang/ru';
 
 import Badge from '@mui/material/Badge';
 import { styled } from '@mui/material/styles';
+import useMediaQuery from '@mui/material/useMediaQuery';
 
 const StyledBadge = styled(Badge)(({ theme }) => ({
   '& .MuiBadge-badge': {
@@ -51,22 +50,8 @@ const StyledBadge = styled(Badge)(({ theme }) => ({
   },
 }));
 
-const style = {
-  position: 'absolute',
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '10px',
-  top: '50%',
-  left: '50%',
-  transform: 'translate(-50%, -50%)',
-  width: 400,
-  bgcolor: 'background.paper',
-  border: '2px solid #000',
-  boxShadow: 24,
-  p: 4,
-};
-
 function ChatSection({ message, isEdited, setMessages, socket, alreadyOnline }) {
+  const smallDevice = useMediaQuery('(max-width:500px)');
   const [edit, setEdit] = useState('');
   const [editModal, setEditModal] = useState(false);
 
@@ -111,10 +96,20 @@ function ChatSection({ message, isEdited, setMessages, socket, alreadyOnline }) 
     setProfileModal(false);
   };
 
-  register('ru', ru);
-
-  const date = new Date(message.createdAt);
-  const formattedDate = format(date, 'ru');
+  const style = {
+    position: 'absolute',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '10px',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: smallDevice ? 240 : 400,
+    bgcolor: 'background.paper',
+    border: '2px solid #000',
+    boxShadow: 24,
+    p: 4,
+  };
 
   return (
     <>
@@ -193,9 +188,8 @@ function ChatSection({ message, isEdited, setMessages, socket, alreadyOnline }) 
             color: background ? 'white' : 'black',
           }}>
           <p>
-            {/* {new Date(message.createdAt).getHours().toString().padStart(2, '0')}:
-            {new Date(message.createdAt).getMinutes().toString().padStart(2, '0')} */}
-            {formattedDate}
+            {new Date(message.createdAt).getHours().toString().padStart(2, '0')}:
+            {new Date(message.createdAt).getMinutes().toString().padStart(2, '0')}
           </p>
         </div>
         {isEdited && (

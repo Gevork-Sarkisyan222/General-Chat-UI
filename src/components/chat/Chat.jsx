@@ -34,24 +34,6 @@ const style = {
   overflow: 'auto',
 };
 
-const styleForGroupModal = {
-  position: 'absolute',
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '15px',
-  top: '50%',
-  left: '50%',
-  transform: 'translate(-50%, -50%)',
-  width: 400,
-  maxWidth: '85vw',
-  maxHeight: '85vh',
-  bgcolor: 'background.paper',
-  border: '2px solid #000',
-  boxShadow: 24,
-  p: 4,
-  overflow: 'auto',
-};
-
 function Chat({ socket, messages, setMessages }) {
   const { background } = useSelector((state) => state.background);
   const { mobileBackBG } = useSelector((state) => state);
@@ -68,6 +50,24 @@ function Chat({ socket, messages, setMessages }) {
   const { pageBackground } = useSelector((state) => state.pageBackground);
   const smallDevice = useMediaQuery('(max-width:600px)');
   const scrollRef = useRef();
+
+  const styleForGroupModal = {
+    position: 'absolute',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '15px',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: smallDevice ? 240 : 400,
+    maxWidth: '85vw',
+    maxHeight: '85vh',
+    bgcolor: 'background.paper',
+    border: '2px solid #000',
+    boxShadow: 24,
+    p: 4,
+    overflow: 'auto',
+  };
 
   // when message changes adding new scroll will go down with css behavior 'smooth'
   useEffect(() => {
