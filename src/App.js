@@ -1,12 +1,12 @@
-import React, { useRef, useState } from 'react';
-import Navbar from './components/Navbar';
-import './App.scss';
-import { Routes, Route } from 'react-router-dom';
-import Login from './components/login/Login';
-import Register from './components/register/Register';
-import Home from './components/Home';
-import { fetchAuthMe } from './redux/slice/userSlice';
-import { useDispatch, useSelector } from 'react-redux';
+import React, { useRef, useState } from "react";
+import Navbar from "./components/Navbar";
+import "./App.scss";
+import { Routes, Route } from "react-router-dom";
+import Login from "./components/login/Login";
+import Register from "./components/register/Register";
+import Home from "./components/Home";
+import { fetchAuthMe } from "./redux/slice/userSlice";
+import { useDispatch, useSelector } from "react-redux";
 
 function App() {
   const [messages, setMessages] = useState([]);
@@ -23,7 +23,7 @@ function App() {
     document.body.style.backgroundImage = pageBackground;
 
     return () => {
-      document.body.style.backgroundImage = '';
+      document.body.style.backgroundImage = "";
     };
   }, [pageBackground]);
 
@@ -34,7 +34,13 @@ function App() {
       <Routes>
         <Route
           path="/"
-          element={<Home socket={socket} messages={messages} setMessages={setMessages} />}
+          element={
+            <Home
+              socket={socket}
+              messages={messages}
+              setMessages={setMessages}
+            />
+          }
         />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />

@@ -1,18 +1,24 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from '../.././axios';
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import axios from "../.././axios";
 
-export const fetchLogin = createAsyncThunk('user/fetchLogin', async (params) => {
-  const res = await axios.post('/signIn', params);
-  return res.data;
-});
+export const fetchLogin = createAsyncThunk(
+  "user/fetchLogin",
+  async (params) => {
+    const res = await axios.post("/signIn", params);
+    return res.data;
+  }
+);
 
-export const fetchRegister = createAsyncThunk('user/fetchRegister', async (params) => {
-  const res = await axios.post('/signUp', params);
-  return res.data;
-});
+export const fetchRegister = createAsyncThunk(
+  "user/fetchRegister",
+  async (params) => {
+    const res = await axios.post("/signUp", params);
+    return res.data;
+  }
+);
 
-export const fetchAuthMe = createAsyncThunk('user/fetchAuthMe', async () => {
-  const res = await axios.get('/user/getMe');
+export const fetchAuthMe = createAsyncThunk("user/fetchAuthMe", async () => {
+  const res = await axios.get("/user/getMe");
   return res.data;
 });
 
@@ -22,7 +28,7 @@ const initialState = {
 };
 
 export const userSlice = createSlice({
-  name: 'user',
+  name: "user",
   initialState,
   reducers: {
     logout: (state) => {
