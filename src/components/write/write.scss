@@ -1,16 +1,14 @@
 .WriteArea {
-  position: absolute;
-  top: 708px;
-  width: 950px;
+  width: 100%;
   //   if mobile kenem 100%
-  height: 76px;
+  height: max-content;
   border-radius: 50px;
-  //   background: grey;
-  background-image: url('https://img.freepik.com/free-vector/hand-painted-watercolor-pastel-sky-background_23-2148902771.jpg?size=626&ext=jpg&ga=GA1.1.1412446893.1704585600&semt=sph');
+  // background-image: url("https://img.freepik.com/free-vector/hand-painted-watercolor-pastel-sky-background_23-2148902771.jpg?size=626&ext=jpg&ga=GA1.1.1412446893.1704585600&semt=sph");
   z-index: 100;
   display: flex;
-  align-items: center;
   justify-content: center;
+  gap: 12px;
+  margin-top: 20px;
 
   @media (max-width: 927px) {
     width: 100%;
@@ -50,7 +48,7 @@
     border: none;
   }
   .form:before {
-    content: '';
+    content: "";
     position: absolute;
     background: var(--border-color);
     transform: scaleX(0);

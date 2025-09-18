@@ -1,87 +1,360 @@
+/* =========================
+   Chat — бело-серая тема
+   ========================= */
+
+:root {
+  --chat-bg: #ffffff; /* основной фон карточки чата */
+  --chat-surface: #f7f7f8; /* вспомогательные светло-серые поверхности */
+  --chat-border: rgba(17, 24, 39, 0.08);
+  --chat-border-strong: rgba(17, 24, 39, 0.16);
+  --chat-shadow: 0 8px 24px rgba(17, 24, 39, 0.08);
+
+  --bubble-in: #ffffff; /* мой пузырёк (светлый) */
+  --bubble-out: #f3f4f6; /* чужой пузырёк (сероватый) */
+
+  --divider: #e6e7eb;
+  --text-primary: #111317;
+  --text-secondary: #6b7280;
+  --glass: rgba(255, 255, 255, 0.92); /* стеклянный блок для write-area */
+}
+
+/* корневой центринг и отступ сверху */
 .Chat {
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
   margin-top: 20px;
+  padding-inline: 10px;
+}
 
-  .Wrapper {
-    width: 920px;
-    height: 680px;
-    border-radius: 15px;
-    padding: 20px;
-    position: relative;
-    background: var(--White-white, #fff);
-    // background-image: url('https://png.pngtree.com/background/20230518/original/pngtree-beautiful-sky-with-clouds-in-it-picture-image_2647603.jpg');
+/* обёртка чата */
+.Chat .Wrapper {
+  width: min(65%, 1100px);
+  height: min(85vh, calc(100vh - 40px));
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
 
-    box-shadow: 0px 5.045px 25.225px 0px rgba(0, 0, 0, 0.15);
-    border: 3px solid rgb(209, 209, 209);
+  border-radius: 16px;
+  padding: 0;
+  background: var(--White-white, var(--chat-bg));
+  box-shadow: var(--chat-shadow);
+  border: 1px solid var(--chat-border);
 
-    .chat-area {
+  /* если в инлайне приходит backgroundImage */
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+
+  /* ===== header ===== */
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    background: linear-gradient(180deg, #ffffff 0%, #f6f7f9 100%);
+    backdrop-filter: blur(8px);
+    padding: 14px 18px 10px;
+    text-align: center;
+    border-bottom: 1px solid var(--chat-border);
+
+    h2 {
+      margin: 0 0 8px 0;
+      font-size: clamp(16px, 2.2vw, 20px);
+      font-weight: 800;
+      color: var(--text-primary);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    h3 {
+      margin: 8px 0 10px;
+      font-size: clamp(14px, 1.8vw, 18px);
+      font-weight: 700;
+      color: var(--text-secondary);
+    }
+
+    .line {
+      width: 100%;
+      height: 1px;
+      background: var(--divider);
+      box-shadow: 0 1px 0 rgba(0, 0, 0, 0.02);
+      margin-top: 6px;
+    }
+  }
+
+  /* ===== нижний блок: список + инпут ===== */
+  .down-chat-section {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+
+  /* ===== список сообщений ===== */
+  .chat-area {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+
+    padding: clamp(12px, 2.4vw, 20px) clamp(10px, 2.4vw, 24px);
+    padding-bottom: clamp(84px, 12vh, 120px);
+
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+
+    overscroll-behavior: contain;
+
+    &::-webkit-scrollbar {
+      width: 10px;
+    }
+    &::-webkit-scrollbar-thumb {
+      background: #d5d8de;
+      border-radius: 999px;
+      border: 2px solid transparent;
+      background-clip: padding-box;
+    }
+
+    /* твоя вложенная структура сохранена */
+    .Chat-Section {
       display: flex;
-      flex-direction: column;
-      padding: 40px;
-      gap: 27px;
-      overflow: scroll;
-      height: 338px;
+      align-items: flex-end;
+      gap: 10px;
 
-      .Chat-Section {
-        display: flex;
-        align-items: center;
-        gap: 7px;
+      > div[style*="justify-content"] {
+        margin-inline-start: 6px;
+      }
 
-        .Message-Section {
-          width: 145px;
-          height: 100%;
-          border-radius: 0px 12px 12px 12px;
-          background: #efefef;
-          padding-left: 10px;
+      .Message-Section {
+        position: relative;
+        display: inline-flex;
+        flex-direction: column;
+        align-items: flex-start;
+
+        max-width: min(78%, 640px);
+        width: max-content;
+
+        background: var(--bubble-out);
+        color: #111;
+        border-radius: 14px;
+        padding: 10px 12px 12px 12px;
+        box-shadow: 0 2px 8px rgba(17, 24, 39, 0.05);
+
+        .name {
+          position: static;
+          margin: 0 0 2px 0;
+          font-size: 12px;
+          font-weight: 700;
+          color: var(--text-secondary);
+        }
+
+        .role {
+          position: static;
+          margin: -2px 0 6px 0;
+          font-size: 11px;
+          color: #8d9096;
+          font-weight: 600;
+        }
+
+        .text-place {
           display: flex;
-          align-items: center;
-          position: relative;
+          flex-wrap: wrap;
+          gap: 10px;
+          width: 100%;
 
-          .name {
-            position: absolute;
-            top: -13px;
-            font-size: 15px;
-            font-weight: 600;
+          .text {
+            margin: 0;
+            font-size: 14px;
+            line-height: 1.5;
+            word-break: break-word;
+            white-space: pre-wrap;
+            color: #1f2328;
           }
+        }
 
-          .image {
-            width: 100px;
-            height: 100%;
-            margin-top: 28px;
-            margin-bottom: 16px;
-          }
-          .role {
-            position: absolute;
-            top: -6px;
-            font-size: 10px;
-            left: 74px;
-            color: grey;
-            font-weight: 400;
-          }
-          .text-place {
-            display: flex;
-            flex-wrap: wrap;
+        .image {
+          width: auto;
+          height: auto;
+          margin: 6px 0 0 0;
 
-            .text {
-              margin-top: 22px;
-            }
+          img {
+            display: block;
+            width: min(220px, 60vw);
+            max-height: 320px;
+            object-fit: cover;
+            border-radius: 10px;
+            cursor: zoom-in;
+            box-shadow: 0 4px 12px rgba(17, 24, 39, 0.1);
+            background: #fafafa;
           }
         }
       }
     }
+  }
 
-    header {
-      text-align: center;
+  /* ===== WriteArea — видна, прилипающая снизу ===== */
+  .write-area {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    flex-shrink: 0;
 
-      .line {
-        width: 100%;
-        height: 2px;
-        background: rgb(214, 214, 214);
-        box-shadow: 2px black;
+    padding: 10px clamp(10px, 2.4vw, 18px);
+    padding-bottom: calc(10px + env(safe-area-inset-bottom));
+
+    background: var(--glass);
+    backdrop-filter: blur(8px);
+    border-top: 1px solid var(--chat-border);
+    box-shadow: 0 -6px 18px rgba(17, 24, 39, 0.06);
+
+    > * {
+      width: 100%;
+    }
+
+    input[type="text"],
+    textarea {
+      width: 100%;
+      border-radius: 12px;
+      border: 1px solid var(--chat-border);
+      padding: 12px 14px;
+      font-size: 14px;
+      outline: none;
+      background: #ffffff;
+      color: #1f2328;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+      &::placeholder {
+        color: #a1a6ae;
+      }
+
+      &:focus {
+        border-color: var(--chat-border-strong);
+        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.12);
       }
     }
+  }
+
+  /* ===== прочее из твоего файла — сохранено ===== */
+}
+
+/* ========= адаптив ========= */
+
+@media (max-width: 1200px) {
+  .Chat .Wrapper {
+    width: 86%;
+  }
+}
+
+@media (max-width: 900px) {
+  .Chat .Wrapper {
+    width: 92%;
+    border-radius: 14px;
+  }
+
+  .Chat .Wrapper .chat-area {
+    gap: 14px;
+    padding: 14px 14px;
+  }
+
+  .Chat .Wrapper .chat-area .Chat-Section .Message-Section {
+    max-width: min(84%, 560px);
+    .text-place .text {
+      font-size: 13.5px;
+    }
+  }
+}
+
+@media (max-width: 600px) {
+  .Chat {
+    padding-inline: 0;
+    margin-top: 0;
+  }
+
+  .Chat .Wrapper {
+    width: 100%;
+    height: 100vh;
+    border-radius: 0;
+    border: none;
+    box-shadow: none;
+    background: #ffffff;
+  }
+
+  .Chat .Wrapper header {
+    padding: 12px 12px 8px;
+    background: linear-gradient(180deg, #ffffff 0%, #f7f7f8 100%);
+  }
+
+  .Chat .Wrapper .chat-area {
+    gap: 12px;
+    padding: 10px 10px;
+    padding-bottom: 110px; /* запас под WriteArea */
+  }
+
+  .Chat .Wrapper .chat-area .Chat-Section {
+    gap: 8px;
+
+    .Message-Section {
+      max-width: 88%;
+      border-radius: 12px;
+      padding: 10px 10px 11px;
+      background: var(--bubble-out);
+
+      .name {
+        font-size: 11.5px;
+      }
+      .role {
+        font-size: 10.5px;
+      }
+      .text-place .text {
+        font-size: 13px;
+      }
+      .image img {
+        width: min(68vw, 240px);
+        max-height: 260px;
+      }
+    }
+  }
+
+  .Chat .Wrapper .write-area {
+    padding: 10px 10px calc(10px + env(safe-area-inset-bottom));
+    background: rgba(255, 255, 255, 0.96);
+    border-top-color: var(--chat-border);
+    backdrop-filter: blur(10px);
+  }
+}
+
+/* ========= лёгкий серый инсет для читаемости на очень светлых фото ========= */
+.Chat .Wrapper::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+      ellipse at bottom,
+      rgba(17, 24, 39, 0.06),
+      transparent 50%
+    ),
+    radial-gradient(ellipse at top, rgba(17, 24, 39, 0.04), transparent 60%);
+  opacity: 0.35; /* ослабил для бело-серой темы */
+}
+
+/* На системной тёмной теме слегка усиливаем границы, но остаёмся светлыми */
+@media (prefers-color-scheme: dark) {
+  .Chat .Wrapper {
+    border-color: rgba(255, 255, 255, 0.12);
+    background: #ffffff; /* оставляем светлый чат */
+  }
+  .Chat .Wrapper header {
+    background: linear-gradient(180deg, #ffffff 0%, #f6f7f9 100%);
+  }
+  .Chat .Wrapper .write-area {
+    background: rgba(255, 255, 255, 0.96);
+    border-top-color: rgba(17, 24, 39, 0.1);
   }
 }
 
@@ -92,4 +365,117 @@
 
 .modal-image {
   object-fit: cover;
+}
+
+/* Шапка чата: стекло, липкая, бело-серая тема */
+.chat-header {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  background: linear-gradient(180deg, #fff 0%, #f7f7f9 100%);
+  backdrop-filter: blur(8px);
+  padding: 12px 14px 8px;
+  border-bottom: 1px solid rgba(17, 24, 39, 0.08);
+
+  .chat-header__top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .chat-header__title {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+
+    .chat-header__name {
+      margin: 0;
+      font-weight: 800;
+      letter-spacing: 0.2px;
+      font-size: clamp(16px, 2.2vw, 20px);
+      color: #111317;
+      line-height: 1.1;
+    }
+
+    .chat-header__edit {
+      cursor: pointer;
+      color: #9aa0a6;
+      transition: transform 0.15s ease, color 0.15s ease, opacity 0.15s ease;
+      opacity: 0.9;
+
+      &:hover {
+        color: #6b7280;
+        transform: rotate(-6deg) scale(1.05);
+        opacity: 1;
+      }
+      &:active {
+        transform: rotate(-4deg) scale(1.02);
+      }
+    }
+  }
+
+  .chat-header__online {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: #f1f2f4;
+    color: #1f2328;
+    font-weight: 700;
+    font-size: 13px;
+    white-space: nowrap;
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #22c55e; /* зелёная точка */
+      box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.15);
+    }
+    .count {
+      font-variation-settings: "wght" 750;
+    }
+    .label {
+      color: #6b7280;
+      font-weight: 600;
+    }
+  }
+
+  .chat-header__avatars {
+    margin-top: 10px;
+    display: flex;
+    justify-content: center;
+  }
+
+  .line {
+    margin-top: 10px;
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #e6e7eb, transparent);
+  }
+}
+
+/* Адаптив: на узких экранах онлайн уходит под заголовок слева */
+@media (max-width: 520px) {
+  .chat-header {
+    padding: 10px 10px 6px;
+
+    .chat-header__top {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 8px;
+    }
+
+    .chat-header__online {
+      align-self: flex-start;
+      padding: 5px 9px;
+      font-size: 12.5px;
+    }
+
+    .chat-header__avatars {
+      margin-top: 8px;
+    }
+  }
 }
