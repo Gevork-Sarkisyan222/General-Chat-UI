@@ -129,13 +129,16 @@ function ChatSection({
     top: "50%",
     left: "50%",
     transform: "translate(-50%, -50%)",
-    width: smallDevice ? 240 : 400,
+    maxWidth: smallDevice ? "90vw" : "80vw", // ограничение по ширине экрана
+    maxHeight: "85vh", // ограничение по высоте экрана
     bgcolor: "background.paper",
     border: "2px solid #000",
     boxShadow: 24,
-    p: 4,
+    p: 2, // чуть меньше паддинга, чтобы не съедало место
     display: "flex",
     justifyContent: "center",
+    alignItems: "center", // центрирование по вертикали
+    overflow: "auto", // если картинка больше окна — можно скроллить
   };
 
   const [imageView, setImageView] = React.useState(false);
@@ -146,6 +149,39 @@ function ChatSection({
   };
   const handleCloseImageView = () => setImageView(false);
 
+  // Тот самый off-white URL
+  const OFF_WHITE_URL =
+    "https://htmlcolorcodes.com/assets/images/colors/off-white-color-solid-background-1920x1080.png";
+
+  // Достаём чистый URL из значения background/backgroundImage
+  function extractUrl(bg) {
+    if (!bg) return "";
+    const s = String(bg).trim();
+    // матчим url("...") / url('...') / url(...)
+    const m = s.match(/url\((?:'|")?([^'")]+)(?:'|")?\)/i);
+    const raw = m ? m[1] : s; // если не найдено url(...), считаем что уже чистый URL
+    return raw.replace(/^['"]|['"]$/g, ""); // убираем крайние кавычки на всякий
+  }
+
+  // Проверка именно этого фона
+  function isOffWhiteBackground(bg) {
+    const url = extractUrl(bg);
+    // Точно совпадает или хотя бы оканчивается на нужный файл (на случай относительных путей/параметров)
+    return (
+      url === OFF_WHITE_URL ||
+      url.endsWith("off-white-color-solid-background-1920x1080.png")
+    );
+  }
+
+  // Основная функция выбора цвета текста
+  function getTextColor(bg) {
+    return isOffWhiteBackground(bg) ? "black" : "white";
+  }
+
+  // Пример использования
+  // background может быть: "url('https://htmlcolorcodes.com/...png')" или просто URL строка
+  const textColor = getTextColor(background);
+
   return (
     <>
       <ImageViewModal
@@ -155,18 +191,23 @@ function ChatSection({
         aria-describedby="modal-modal-description"
       >
         <Box sx={imageViewStyle}>
-          <div className="modal-image">
+          <div className="modal-image" style={{ textAlign: "center" }}>
             <img
-              style={{
-                width: smallDevice ? "275px" : "424px",
-                height: "273px",
-              }}
               src={imageUrlView}
               alt="view image"
+              style={{
+                maxWidth: smallDevice ? "90vw" : "80vw", // ограничение по ширине экрана
+                maxHeight: "80vh", // ограничение по высоте экрана
+                height: "auto", // сохраняет пропорции
+                width: "auto",
+                borderRadius: "8px", // красиво скруглить углы
+                objectFit: "contain", // вписывает в рамки, без обрезки
+              }}
             />
           </div>
         </Box>
       </ImageViewModal>
+
       <ProfileModalJoy
         aria-labelledby="modal-title"
         aria-describedby="modal-desc"
@@ -257,11 +298,20 @@ function ChatSection({
               <div
                 onClick={() => handleOpenImageView(message?.image)}
                 className="image"
+                style={{
+                  display: "inline-block",
+                  cursor: "pointer",
+                  maxWidth: "100%", // ограничение по ширине контейнера
+                }}
               >
                 <img
-                  style={{ width: "100px", cursor: "pointer" }}
                   src={message?.image}
                   alt=""
+                  style={{
+                    maxWidth: "100%", // чтобы не вылезала за экран
+                    height: "auto", // сохраняет пропорции
+                    borderRadius: "8px", // опционально — скругление углов
+                  }}
                 />
               </div>
             )}
@@ -272,7 +322,7 @@ function ChatSection({
             display: "flex",
             fontSize: "11px",
             justifyContent: "flex-end",
-            color: background ? "white" : "black",
+            color: textColor,
           }}
         >
           <p>

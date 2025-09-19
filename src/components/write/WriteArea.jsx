@@ -162,20 +162,20 @@ function WriteArea({
       const createdId = res?.data?._id;
 
       // оптимистично добавим сообщение в список (если у тебя это делает сокет — можно убрать)
-      setMessages((prev) => [
-        ...prev,
-        {
-          _id: createdId || `tmp-${Date.now()}`,
-          image: imageUrl,
-          user: {
-            _id: currentUser?._id,
-            name: currentUser?.name,
-            role: currentUser?.role,
-            avatarUrl: currentUser?.avatarUrl,
-          },
-          createdAt: Date.now(),
-        },
-      ]);
+      // setMessages((prev) => [
+      //   ...prev,
+      //   {
+      //     _id: createdId || `tmp-${Date.now()}`,
+      //     image: imageUrl,
+      //     user: {
+      //       _id: currentUser?._id,
+      //       name: currentUser?.name,
+      //       role: currentUser?.role,
+      //       avatarUrl: currentUser?.avatarUrl,
+      //     },
+      //     createdAt: Date.now(),
+      //   },
+      // ]);
 
       // уведомляем по сокету (если сервер это использует)
       if (socket?.current) {
@@ -359,14 +359,7 @@ function WriteArea({
               {uploading ? (
                 <LinearProgress determinate value={uploadPct} />
               ) : imageUrl ? (
-                <Button
-                  size="sm"
-                  variant="outlined"
-                  onClick={() => window.open(imageUrl, "_blank", "noopener")}
-                  sx={{ ml: 1 }}
-                >
-                  Открыть
-                </Button>
+                <></>
               ) : null}
             </div>
           </Sheet>
