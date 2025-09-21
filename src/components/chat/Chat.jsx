@@ -265,12 +265,20 @@ function Chat({ socket, messages, setMessages }) {
   // =========================================================
 
   // ICE конфиг (добавь свой TURN для продакшена)
+  // заменяем RTC_CONFIGURATION
   const RTC_CONFIGURATION = useMemo(
     () => ({
       iceServers: [
         { urls: "stun:stun.l.google.com:19302" },
-        // { urls: "turn:YOUR_TURN_HOST:3478", username: "user", credential: "pass" },
+        // прод: свой TURN
+        {
+          urls: ["turn:YOUR_TURN_HOST:3478"], // или turns:... для TLS
+          username: "turnUser",
+          credential: "turnPass",
+        },
       ],
+      // опционально:
+      // iceTransportPolicy: "all",
     }),
     []
   );
@@ -446,8 +454,21 @@ function Chat({ socket, messages, setMessages }) {
     socket.current.off("call:peers");
     socket.current.on("call:peers", async ({ peers }) => {
       for (const peerSid of peers) {
-        const p = createPeer(peerSid, true);
-        // инициатор сам сгенерирует offer и отправит через p.on('signal')
+        const p = createPeer(peerSid, true); // мы инициатор
+
+        // WATCHDOG: если за 12с не пришёл стрим — прибьём peer и дадим шансу пересоздаться
+        const watchdog = setTimeout(() => {
+          if (!remoteStreamsRef.current.has(peerSid)) {
+            try {
+              p.destroy();
+            } catch {}
+            peersRef.current.delete(peerSid);
+          }
+        }, 12000);
+
+        p.on("stream", () => clearTimeout(watchdog));
+        p.on("close", () => clearTimeout(watchdog));
+        p.on("error", () => clearTimeout(watchdog));
       }
     });
 
@@ -465,22 +486,26 @@ function Chat({ socket, messages, setMessages }) {
     // === Маппинг сигналов на simple-peer.signal ===
     socket.current.off("call:offer");
     socket.current.on("call:offer", async ({ fromSocketId, sdp }) => {
-      const p = createPeer(fromSocketId, false); // не инициатор
+      const p = createPeer(fromSocketId, false); // мы НЕ инициатор
+
+      // WATCHDOG
+      const watchdog = setTimeout(() => {
+        if (!remoteStreamsRef.current.has(fromSocketId)) {
+          try {
+            p.destroy();
+          } catch {}
+          peersRef.current.delete(fromSocketId);
+        }
+      }, 12000);
+
+      p.on("stream", () => clearTimeout(watchdog));
+      p.on("close", () => clearTimeout(watchdog));
+      p.on("error", () => clearTimeout(watchdog));
+
       try {
         p.signal(sdp); // передаём offer в simple-peer
       } catch (e) {
         console.error("signal offer failed", e);
-      }
-    });
-
-    socket.current.off("call:answer");
-    socket.current.on("call:answer", async ({ fromSocketId, sdp }) => {
-      const p = peersRef.current.get(fromSocketId);
-      if (!p) return;
-      try {
-        p.signal(sdp); // answer
-      } catch (e) {
-        console.error("signal answer failed", e);
       }
     });
 
@@ -984,19 +1009,39 @@ function Chat({ socket, messages, setMessages }) {
 // NEW(WebRTC + simple-peer): компонент удалённого видео
 function RemoteVideo({ peerId, stream }) {
   const ref = useRef(null);
+  const [muted, setMuted] = useState(true);
+
   useEffect(() => {
     if (!ref.current) return;
     ref.current.srcObject = stream;
-    ref.current.play?.().catch((err) => {
-      console.log("error", err);
-    });
+    // пробуем автоплей
+    ref.current.play?.().catch(() => {});
   }, [stream]);
 
   return (
     <div className="tile">
-      <video ref={ref} autoPlay playsInline className="tile__video" />
+      <video
+        ref={ref}
+        autoPlay
+        playsInline
+        muted={muted} // ключевой момент для autoplay
+        className="tile__video"
+      />
       <div className="tile__badges">
         <Chip size="small" label={peerId.slice(0, 6)} />
+        {muted && (
+          <Button
+            size="small"
+            onClick={() => {
+              if (!ref.current) return;
+              ref.current.muted = false;
+              setMuted(false);
+              ref.current.play?.().catch(() => {});
+            }}
+          >
+            Включить звук
+          </Button>
+        )}
       </div>
     </div>
   );
