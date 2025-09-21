@@ -22,7 +22,8 @@ import { Card, Stack, alpha, IconButton, Tooltip, Chip } from "@mui/material";
 import { Link } from "react-router-dom";
 import LockOpenRoundedIcon from "@mui/icons-material/LockOpenRounded";
 
-// NEW(WebRTC): иконки управления звонком
+// NEW(WebRTC + simple-peer)
+import Peer from "simple-peer";
 import VideoCallRoundedIcon from "@mui/icons-material/VideoCallRounded";
 import CallEndRoundedIcon from "@mui/icons-material/CallEndRounded";
 import MicRoundedIcon from "@mui/icons-material/MicRounded";
@@ -81,19 +82,13 @@ function Chat({ socket, messages, setMessages }) {
   };
 
   // when message changes adding new scroll will go down with css behavior 'smooth'
-  // (оставил как у тебя, но добавил безопасные проверки)
   useEffect(() => {
-    if (!isAuthenticated) return; // нет чата — нет скролла
+    if (!isAuthenticated) return;
     const messagesContainer = scrollRef.current;
-    if (!messagesContainer) return; // DOM ещё не смонтирован
-
+    if (!messagesContainer) return;
     const newScrollTop =
       messagesContainer.scrollHeight - messagesContainer.clientHeight;
-
-    messagesContainer.scrollTo({
-      top: newScrollTop,
-      behavior: "smooth",
-    });
+    messagesContainer.scrollTo({ top: newScrollTop, behavior: "smooth" });
   }, [isAuthenticated, messages]);
 
   // socket подключение
@@ -130,13 +125,11 @@ function Chat({ socket, messages, setMessages }) {
   // update message with socket
   useEffect(() => {
     const handler = ({ messageId, editedMessage }) => {
-      setMessages((prevMessages) => {
-        return prevMessages.map((message) =>
-          message._id === messageId
-            ? { ...message, message: editedMessage }
-            : message
-        );
-      });
+      setMessages((prevMessages) =>
+        prevMessages.map((m) =>
+          m._id === messageId ? { ...m, message: editedMessage } : m
+        )
+      );
     };
     socket.current.on("messageUpdated", handler);
     return () => socket.current?.off("messageUpdated", handler);
@@ -183,12 +176,8 @@ function Chat({ socket, messages, setMessages }) {
   };
 
   const [open, setOpen] = React.useState(false);
-  const handleOpen = () => {
-    setOpen(true);
-  };
-  const handleClose = () => {
-    setOpen(false);
-  };
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
 
   const onDeleteUser = (userId) => {
     setUsers(users.filter((user) => user?._id !== userId));
@@ -205,10 +194,7 @@ function Chat({ socket, messages, setMessages }) {
     const openMessage = window.confirm(
       "Вы действительно хотите изменить название группы?"
     );
-
-    if (openMessage) {
-      setGroupModal(true);
-    }
+    if (openMessage) setGroupModal(true);
   };
   const handleCloseGroupModal = () => setGroupModal(false);
 
@@ -217,62 +203,55 @@ function Chat({ socket, messages, setMessages }) {
     localStorage.setItem("group", groupName);
   };
 
-  const checkIfOnline = (userId) => {
-    return isOnlineUser.includes(userId);
-  };
+  const checkIfOnline = (userId) => isOnlineUser.includes(userId);
 
-  // Дополнительный безопасный автоскролл через rAF (оставил, но с проверками)
+  // Дополнительный безопасный автоскролл через rAF
   useEffect(() => {
     if (!isAuthenticated) return;
     const el = scrollRef.current;
     if (!el) return;
-
     const rafId = requestAnimationFrame(() => {
       el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
     });
-
     return () => cancelAnimationFrame(rafId);
   }, [isAuthenticated, messages]);
 
   // =========================================================
-  // NEW(WebRTC): состояние/рефы видеозвонка
+  // NEW(WebRTC + simple-peer): состояние/рефы видеозвонка
   // =========================================================
 
-  // Настройка ICE: добавь свой TURN в urls для продакшена
+  // ICE конфиг (добавь свой TURN для продакшена)
   const RTC_CONFIGURATION = useMemo(
     () => ({
       iceServers: [
         { urls: "stun:stun.l.google.com:19302" },
         // { urls: "turn:YOUR_TURN_HOST:3478", username: "user", credential: "pass" },
       ],
-      // optional: iceTransportPolicy: "all",
     }),
     []
   );
 
-  // Общий roomId звонка: для общего чата пусть будет "general"
+  // Общий roomId звонка
   const CALL_ROOM_ID = "general";
 
-  const [callOpen, setCallOpen] = useState(false); // модалка звонка
-  const [inCall, setInCall] = useState(false); // внутри комнаты звонка
+  const [callOpen, setCallOpen] = useState(false);
+  const [inCall, setInCall] = useState(false);
   const [participantsCount, setParticipantsCount] = useState(1);
 
   const localVideoRef = useRef(null);
   const localStreamRef = useRef(null);
   const screenStreamRef = useRef(null);
 
-  // pc и remote стримы по ключу peer socketId
-  const pcsRef = useRef(new Map()); // Map<string, RTCPeerConnection>
+  // simple-peer инстансы по socketId
+  const peersRef = useRef(new Map()); // Map<peerSid, Peer>
   const [remoteStreams, setRemoteStreams] = useState([]); // [{peerId, stream}]
-  const remoteStreamsRef = useRef(new Map()); // Map<string, MediaStream>
+  const remoteStreamsRef = useRef(new Map()); // Map<peerSid, MediaStream>
 
   const [micEnabled, setMicEnabled] = useState(true);
   const [camEnabled, setCamEnabled] = useState(true);
   const [screenOn, setScreenOn] = useState(false);
 
-  // Утилиты обновления списков потоков
-  const upsertRemoteStream = (peerId, stream) => {
-    remoteStreamsRef.current.set(peerId, stream);
+  const refreshRemoteStreamsState = () => {
     setRemoteStreams(
       Array.from(remoteStreamsRef.current.entries()).map(([id, st]) => ({
         peerId: id,
@@ -280,59 +259,76 @@ function Chat({ socket, messages, setMessages }) {
       }))
     );
     setParticipantsCount(1 + remoteStreamsRef.current.size);
+  };
+
+  const upsertRemoteStream = (peerId, stream) => {
+    remoteStreamsRef.current.set(peerId, stream);
+    refreshRemoteStreamsState();
   };
   const removeRemoteStream = (peerId) => {
     remoteStreamsRef.current.delete(peerId);
-    setRemoteStreams(
-      Array.from(remoteStreamsRef.current.entries()).map(([id, st]) => ({
-        peerId: id,
-        stream: st,
-      }))
-    );
-    setParticipantsCount(1 + remoteStreamsRef.current.size);
+    refreshRemoteStreamsState();
   };
 
-  // Создание/получение PC на конкретного пира
-  const ensurePC = (peerId) => {
-    if (pcsRef.current.has(peerId)) return pcsRef.current.get(peerId);
-    const pc = new RTCPeerConnection(RTC_CONFIGURATION);
+  // Создание simple-peer для конкретного пира
+  const createPeer = (peerSid, initiator) => {
+    if (peersRef.current.has(peerSid)) return peersRef.current.get(peerSid);
 
-    // Отправляем ICE адресно
-    pc.onicecandidate = (e) => {
-      if (e.candidate) {
+    const p = new Peer({
+      initiator,
+      trickle: true, // будем пересылать 'ice' по мере появления
+      stream: localStreamRef.current || undefined,
+      config: RTC_CONFIGURATION,
+    });
+
+    // simple-peer -> сигнал наружу (маппим на твои call:* события)
+    p.on("signal", (data) => {
+      if (data?.type === "offer") {
+        socket.current.emit("call:offer", {
+          toSocketId: peerSid,
+          sdp: data,
+          roomId: CALL_ROOM_ID,
+        });
+      } else if (data?.type === "answer") {
+        socket.current.emit("call:answer", {
+          toSocketId: peerSid,
+          sdp: data,
+          roomId: CALL_ROOM_ID,
+        });
+      } else if (data?.candidate) {
         socket.current.emit("call:ice", {
-          toSocketId: peerId,
-          candidate: e.candidate,
+          toSocketId: peerSid,
+          candidate: data,
           roomId: CALL_ROOM_ID,
         });
       }
-    };
+    });
 
-    pc.ontrack = (e) => {
-      // Берём первый поток
-      const [stream] = e.streams && e.streams.length ? e.streams : [null];
-      if (stream) {
-        upsertRemoteStream(peerId, stream);
-      } else {
-        // собираем вручную
-        const s = remoteStreamsRef.current.get(peerId) || new MediaStream();
-        s.addTrack(e.track);
-        upsertRemoteStream(peerId, s);
-      }
-    };
+    // Получили удалённый стрим (когда remote добавил свою медию)
+    p.on("stream", (stream) => {
+      upsertRemoteStream(peerSid, stream);
+    });
 
-    // Если локальный стрим уже есть — добавляем треки
-    if (localStreamRef.current) {
-      localStreamRef.current
-        .getTracks()
-        .forEach((t) => pc.addTrack(t, localStreamRef.current));
-    }
+    p.on("connect", () => {
+      // data-channel готов (можно чат/сигналы поверх p.send)
+      // console.log("P2P connected with", peerSid);
+    });
 
-    pcsRef.current.set(peerId, pc);
-    return pc;
+    p.on("close", () => {
+      p.removeAllListeners();
+      peersRef.current.delete(peerSid);
+      removeRemoteStream(peerSid);
+    });
+
+    p.on("error", (err) => {
+      console.warn("peer error", peerSid, err?.message || err);
+    });
+
+    peersRef.current.set(peerSid, p);
+    return p;
   };
 
-  // Вход в звонок
+  // Войти в звонок
   const joinCall = async () => {
     if (!socket.current) return;
 
@@ -344,7 +340,6 @@ function Chat({ socket, messages, setMessages }) {
     localStreamRef.current = stream;
     if (localVideoRef.current) localVideoRef.current.srcObject = stream;
 
-    // начальные состояния треков
     stream.getAudioTracks().forEach((t) => (t.enabled = true));
     stream.getVideoTracks().forEach((t) => (t.enabled = true));
     setMicEnabled(true);
@@ -353,14 +348,14 @@ function Chat({ socket, messages, setMessages }) {
     // 2) Подписываемся на сигнальные события
     bindCallSocketEvents();
 
-    // 3) Входим в комнату (новичку вернётся список peers)
+    // 3) Входим в комнату
     socket.current.emit("call:join", {
       roomId: CALL_ROOM_ID,
       meta: { name: currentUser?.name, avatarUrl: currentUser?.avatarUrl },
     });
 
     setInCall(true);
-    setParticipantsCount(1); // мы сами
+    setParticipantsCount(1);
   };
 
   // Выход из звонка
@@ -373,25 +368,32 @@ function Chat({ socket, messages, setMessages }) {
     setParticipantsCount(1);
   };
 
+  const destroyPeer = (peerSid) => {
+    const p = peersRef.current.get(peerSid);
+    if (p) {
+      try {
+        p.destroy();
+      } catch {}
+      peersRef.current.delete(peerSid);
+    }
+    removeRemoteStream(peerSid);
+  };
+
   // Полная очистка
   const cleanupCall = () => {
-    // Закрыть PC
-    pcsRef.current.forEach((pc) => {
+    peersRef.current.forEach((p) => {
       try {
-        pc.getSenders().forEach((s) => s.track && s.track.stop());
-        pc.close();
+        p.destroy();
       } catch {}
     });
-    pcsRef.current.clear();
+    peersRef.current.clear();
 
-    // Остановить локальные треки
     if (localStreamRef.current) {
       localStreamRef.current.getTracks().forEach((t) => t.stop());
       localStreamRef.current = null;
     }
     if (localVideoRef.current) localVideoRef.current.srcObject = null;
 
-    // Остановить шэринг
     if (screenStreamRef.current) {
       try {
         screenStreamRef.current.getTracks().forEach((t) => t.stop());
@@ -400,121 +402,68 @@ function Chat({ socket, messages, setMessages }) {
       setScreenOn(false);
     }
 
-    // Очистить удалённые
     remoteStreamsRef.current.clear();
     setRemoteStreams([]);
   };
 
-  // Навеска/снятие событий сигналинга
+  // Навеска/снятие событий сигналинга (через твой Socket.IO)
   const bindCallSocketEvents = () => {
-    // peers список уже в комнате (мы инициатор офферов)
+    // существующие участники — мы инициаторы
     socket.current.off("call:peers");
     socket.current.on("call:peers", async ({ peers }) => {
-      // Создаём офферы КАЖДОМУ существующему участнику
       for (const peerSid of peers) {
-        const pc = ensurePC(peerSid);
-        // Убедимся, что локальные треки добавлены
-        if (localStreamRef.current) {
-          const hasVideo = pc
-            .getSenders()
-            .some((s) => s.track && s.track.kind === "video");
-          if (!hasVideo) {
-            localStreamRef.current
-              .getTracks()
-              .forEach((t) => pc.addTrack(t, localStreamRef.current));
-          }
-        }
-        const offer = await pc.createOffer({
-          offerToReceiveAudio: true,
-          offerToReceiveVideo: true,
-        });
-        await pc.setLocalDescription(offer);
-        socket.current.emit("call:offer", {
-          toSocketId: peerSid,
-          sdp: offer,
-          roomId: CALL_ROOM_ID,
-        });
+        const p = createPeer(peerSid, true);
+        // инициатор сам сгенерирует offer и отправит через p.on('signal')
       }
     });
 
-    // Когда кто-то вошёл — он сам пришлёт оффер нам; мы просто покажем подсказку/счётчик
     socket.current.off("call:peer-joined");
     socket.current.on("call:peer-joined", ({ socketId }) => {
-      // счётчик обновится, когда придёт ontrack
-      // можно показывать тост/чип — здесь делаем это через setParticipantsCount лениво
+      // Новый участник сам пришлёт offer -> обработаем в 'call:offer'
+      // Счётчик обновится при появлении его стрима
     });
 
     socket.current.off("call:peer-left");
     socket.current.on("call:peer-left", ({ socketId }) => {
-      // закрываем PC и удаляем поток
-      const pc = pcsRef.current.get(socketId);
-      if (pc) {
-        try {
-          pc.getSenders().forEach((s) => s.track && s.track.stop());
-          pc.close();
-        } catch {}
-        pcsRef.current.delete(socketId);
-      }
-      removeRemoteStream(socketId);
+      destroyPeer(socketId);
     });
 
-    // Получили оффер — создаём PC если нужно, сетим remote, отвечаем answer
+    // === Маппинг сигналов на simple-peer.signal ===
     socket.current.off("call:offer");
     socket.current.on("call:offer", async ({ fromSocketId, sdp }) => {
-      const pc = ensurePC(fromSocketId);
-      await pc.setRemoteDescription(new RTCSessionDescription(sdp));
-
-      // добавим локальные треки если вдруг не добавлены
-      if (localStreamRef.current) {
-        const hasVideo = pc
-          .getSenders()
-          .some((s) => s.track && s.track.kind === "video");
-        if (!hasVideo) {
-          localStreamRef.current
-            .getTracks()
-            .forEach((t) => pc.addTrack(t, localStreamRef.current));
-        }
+      const p = createPeer(fromSocketId, false); // не инициатор
+      try {
+        p.signal(sdp); // передаём offer в simple-peer
+      } catch (e) {
+        console.error("signal offer failed", e);
       }
-
-      const answer = await pc.createAnswer();
-      await pc.setLocalDescription(answer);
-      socket.current.emit("call:answer", {
-        toSocketId: fromSocketId,
-        sdp: answer,
-        roomId: CALL_ROOM_ID,
-      });
     });
 
-    // Получили answer — ставим как remote
     socket.current.off("call:answer");
     socket.current.on("call:answer", async ({ fromSocketId, sdp }) => {
-      const pc = ensurePC(fromSocketId);
-      await pc.setRemoteDescription(new RTCSessionDescription(sdp));
+      const p = peersRef.current.get(fromSocketId);
+      if (!p) return;
+      try {
+        p.signal(sdp); // answer
+      } catch (e) {
+        console.error("signal answer failed", e);
+      }
     });
 
-    // Пришёл ICE-кандидат
     socket.current.off("call:ice");
     socket.current.on("call:ice", async ({ fromSocketId, candidate }) => {
-      const pc = ensurePC(fromSocketId);
+      const p = peersRef.current.get(fromSocketId);
+      if (!p) return;
       try {
-        await pc.addIceCandidate(candidate);
+        p.signal(candidate); // trickle ICE
       } catch (e) {
-        console.error("ICE add failed", e);
+        console.error("signal ice failed", e);
       }
     });
 
-    // Hangup (опционально)
     socket.current.off("call:hangup");
     socket.current.on("call:hangup", ({ fromSocketId }) => {
-      const pc = pcsRef.current.get(fromSocketId);
-      if (pc) {
-        try {
-          pc.getSenders().forEach((s) => s.track && s.track.stop());
-          pc.close();
-        } catch {}
-        pcsRef.current.delete(fromSocketId);
-      }
-      removeRemoteStream(fromSocketId);
+      destroyPeer(fromSocketId);
     });
   };
 
@@ -533,29 +482,30 @@ function Chat({ socket, messages, setMessages }) {
     setCamEnabled((v) => !v);
   };
 
+  // Шаринг экрана через замену видео-трека во всех peer-соединениях
   const shareScreen = async () => {
     if (screenOn) return stopShareScreen();
     const display = await navigator.mediaDevices.getDisplayMedia({
       video: true,
       audio: false,
     });
-    const videoTrack = display.getVideoTracks()[0];
+    const screenTrack = display.getVideoTracks()[0];
     screenStreamRef.current = display;
 
-    // Заменяем исходящий видео-трек во всех PC
-    pcsRef.current.forEach((pc) => {
-      const sender = pc
-        .getSenders()
-        .find((s) => s.track && s.track.kind === "video");
-      if (sender && videoTrack) sender.replaceTrack(videoTrack);
+    // Поменяем исходящий видео-трек у всех пиров
+    peersRef.current.forEach((p) => {
+      const sender =
+        p?._pc
+          ?.getSenders?.()
+          .find((s) => s.track && s.track.kind === "video") || null;
+      if (sender && screenTrack) sender.replaceTrack(screenTrack);
     });
 
-    // Локально меняем превью
+    // Локально отображаем экран
     if (localVideoRef.current) localVideoRef.current.srcObject = display;
     setScreenOn(true);
 
-    // Когда юзер остановил шэринг — вернём камеру
-    videoTrack.onended = () => stopShareScreen();
+    screenTrack.onended = () => stopShareScreen();
   };
 
   const stopShareScreen = async () => {
@@ -565,25 +515,25 @@ function Chat({ socket, messages, setMessages }) {
     } catch {}
     screenStreamRef.current = null;
 
-    // Вернём камеру
-    const camTrack = localStreamRef.current?.getVideoTracks()[0];
-    pcsRef.current.forEach((pc) => {
-      const sender = pc
-        .getSenders()
-        .find((s) => s.track && s.track.kind === "video");
+    // Вернуть камеру как исходящий трек
+    const camTrack = localStreamRef.current?.getVideoTracks()[0] || null;
+    peersRef.current.forEach((p) => {
+      const sender =
+        p?._pc
+          ?.getSenders?.()
+          .find((s) => s.track && s.track.kind === "video") || null;
       if (sender && camTrack) sender.replaceTrack(camTrack);
     });
+
     if (localVideoRef.current && localStreamRef.current) {
       localVideoRef.current.srcObject = localStreamRef.current;
     }
     setScreenOn(false);
   };
 
-  // При закрытии модалки — чистим звонок, если был
+  // Если закрываем модалку — выходим из звонка
   useEffect(() => {
-    if (!callOpen && inCall) {
-      leaveCall();
-    }
+    if (!callOpen && inCall) leaveCall();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [callOpen]);
 
@@ -611,6 +561,7 @@ function Chat({ socket, messages, setMessages }) {
           </Button>
         </Box>
       </ChangeGroupModal>
+
       <div>
         <UserListModal
           open={open}
@@ -619,13 +570,7 @@ function Chat({ socket, messages, setMessages }) {
           aria-labelledby="parent-modal-title"
           aria-describedby="parent-modal-description"
         >
-          <Box
-            sx={{
-              ...style,
-              width: 295,
-              display: "flex",
-            }}
-          >
+          <Box sx={{ ...style, width: 295, display: "flex" }}>
             <div style={{ display: "flex", justifyContent: "center" }}>
               <div
                 style={{
@@ -649,6 +594,7 @@ function Chat({ socket, messages, setMessages }) {
           </Box>
         </UserListModal>
       </div>
+
       <div className="Chat">
         <div
           style={{
@@ -678,7 +624,7 @@ function Chat({ socket, messages, setMessages }) {
                 <span className="count">{online}</span>
                 <span className="label">онлайн</span>
 
-                {/* NEW(WebRTC): кнопка видеозвонка и счётчик участников звонка */}
+                {/* NEW(WebRTC + simple-peer): кнопка видеозвонка и счётчик */}
                 <Tooltip title="Видеозвонок (общая комната)">
                   <IconButton
                     onClick={() => setCallOpen(true)}
@@ -771,7 +717,7 @@ function Chat({ socket, messages, setMessages }) {
         </div>
       </div>
 
-      {/* NEW(WebRTC): модалка звонка */}
+      {/* NEW(WebRTC + simple-peer): модалка звонка */}
       {callOpen && (
         <div
           className="call-modal"
@@ -786,7 +732,6 @@ function Chat({ socket, messages, setMessages }) {
             padding: 12,
           }}
           onClick={(e) => {
-            // закрывать по клику вне карточки
             if (e.target === e.currentTarget) setCallOpen(false);
           }}
         >
@@ -1055,7 +1000,7 @@ function Chat({ socket, messages, setMessages }) {
   );
 }
 
-// NEW(WebRTC): компонент удалённого видео (простая обёртка)
+// NEW(WebRTC + simple-peer): компонент удалённого видео
 function RemoteVideo({ peerId, stream }) {
   const ref = useRef(null);
   useEffect(() => {
