@@ -63,6 +63,28 @@ function Chat({ socket, messages, setMessages }) {
   const smallDevice = useMediaQuery("(max-width:600px)");
   const scrollRef = useRef(null);
 
+  // new States down
+
+  // Общий roomId звонка
+  const CALL_ROOM_ID = "general";
+
+  const [callOpen, setCallOpen] = useState(false);
+  const [inCall, setInCall] = useState(false);
+  const [participantsCount, setParticipantsCount] = useState(1);
+
+  const localVideoRef = useRef(null);
+  const localStreamRef = useRef(null);
+  const screenStreamRef = useRef(null);
+
+  // simple-peer инстансы по socketId
+  const peersRef = useRef(new Map()); // Map<peerSid, Peer>
+  const [remoteStreams, setRemoteStreams] = useState([]); // [{peerId, stream}]
+  const remoteStreamsRef = useRef(new Map()); // Map<peerSid, MediaStream>
+
+  const [micEnabled, setMicEnabled] = useState(true);
+  const [camEnabled, setCamEnabled] = useState(true);
+  const [screenOn, setScreenOn] = useState(false);
+
   const styleForGroupModal = {
     position: "absolute",
     display: "flex",
@@ -105,6 +127,28 @@ function Chat({ socket, messages, setMessages }) {
       });
     });
   }, []);
+
+  // Если сокет переподключился — переизлучаем addUser и, если мы были в звонке, заново join
+  useEffect(() => {
+    if (!socket.current) return;
+
+    const onConnect = () => {
+      if (isAuthenticated) {
+        socket.current.emit("addUser", currentUser?._id);
+      }
+      if (inCall) {
+        bindCallSocketEvents();
+        socket.current.emit("call:join", {
+          roomId: CALL_ROOM_ID,
+          meta: { name: currentUser?.name, avatarUrl: currentUser?.avatarUrl },
+        });
+      }
+    };
+
+    socket.current.on("connect", onConnect);
+    return () => socket.current?.off("connect", onConnect);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [inCall, isAuthenticated, currentUser?._id]);
 
   // sending message with socket
   useEffect(() => {
@@ -231,26 +275,6 @@ function Chat({ socket, messages, setMessages }) {
     []
   );
 
-  // Общий roomId звонка
-  const CALL_ROOM_ID = "general";
-
-  const [callOpen, setCallOpen] = useState(false);
-  const [inCall, setInCall] = useState(false);
-  const [participantsCount, setParticipantsCount] = useState(1);
-
-  const localVideoRef = useRef(null);
-  const localStreamRef = useRef(null);
-  const screenStreamRef = useRef(null);
-
-  // simple-peer инстансы по socketId
-  const peersRef = useRef(new Map()); // Map<peerSid, Peer>
-  const [remoteStreams, setRemoteStreams] = useState([]); // [{peerId, stream}]
-  const remoteStreamsRef = useRef(new Map()); // Map<peerSid, MediaStream>
-
-  const [micEnabled, setMicEnabled] = useState(true);
-  const [camEnabled, setCamEnabled] = useState(true);
-  const [screenOn, setScreenOn] = useState(false);
-
   const refreshRemoteStreamsState = () => {
     setRemoteStreams(
       Array.from(remoteStreamsRef.current.entries()).map(([id, st]) => ({
@@ -309,6 +333,10 @@ function Chat({ socket, messages, setMessages }) {
       upsertRemoteStream(peerSid, stream);
     });
 
+    p.on("track", (track, stream) => {
+      if (stream) upsertRemoteStream(peerSid, stream);
+    });
+
     p.on("connect", () => {
       // data-channel готов (можно чат/сигналы поверх p.send)
       // console.log("P2P connected with", peerSid);
@@ -338,7 +366,13 @@ function Chat({ socket, messages, setMessages }) {
       video: true,
     });
     localStreamRef.current = stream;
-    if (localVideoRef.current) localVideoRef.current.srcObject = stream;
+    if (localVideoRef.current) {
+      localVideoRef.current.srcObject = stream;
+      // иногда браузер не автоплеит — форсим
+      localVideoRef.current.play?.().catch((err) => {
+        console.log("error in webRtc", err);
+      });
+    }
 
     stream.getAudioTracks().forEach((t) => (t.enabled = true));
     stream.getVideoTracks().forEach((t) => (t.enabled = true));
@@ -721,74 +755,23 @@ function Chat({ socket, messages, setMessages }) {
       {callOpen && (
         <div
           className="call-modal"
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0,0,0,.65)",
-            zIndex: 9999,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: 12,
-          }}
           onClick={(e) => {
             if (e.target === e.currentTarget) setCallOpen(false);
           }}
         >
-          <div
-            className="call-card"
-            style={{
-              width: "min(1000px, 95vw)",
-              height: "min(700px, 90vh)",
-              background:
-                "linear-gradient(180deg, rgba(255,255,255,.98), rgba(247,247,249,.98))",
-              borderRadius: 16,
-              overflow: "hidden",
-              display: "grid",
-              gridTemplateRows: "1fr auto",
-              boxShadow: "0 24px 64px rgba(0,0,0,.35)",
-            }}
-          >
+          <div className="call-card">
             {/* Видеосетка */}
-            <div
-              style={{
-                padding: 12,
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-                gap: 12,
-                alignContent: "start",
-              }}
-            >
+            <div className="call-grid">
               {/* Локальное превью */}
-              <div
-                style={{
-                  position: "relative",
-                  background: "#000",
-                  borderRadius: 12,
-                  overflow: "hidden",
-                }}
-              >
+              <div className="tile">
                 <video
                   ref={localVideoRef}
                   autoPlay
                   playsInline
                   muted
-                  style={{
-                    width: "100%",
-                    height: 240,
-                    objectFit: "cover",
-                    display: "block",
-                  }}
+                  className="tile__video"
                 />
-                <div
-                  style={{
-                    position: "absolute",
-                    bottom: 8,
-                    left: 8,
-                    display: "flex",
-                    gap: 6,
-                  }}
-                >
+                <div className="tile__badges">
                   <Chip size="small" label="Вы" />
                   {!camEnabled && (
                     <Chip size="small" color="warning" label="Камера выкл." />
@@ -806,22 +789,20 @@ function Chat({ socket, messages, setMessages }) {
             </div>
 
             {/* Панель управления */}
-            <div
-              style={{
-                borderTop: "1px solid rgba(17,24,39,.08)",
-                background: "rgba(255,255,255,.9)",
-                padding: 10,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
-            >
+            <div className="call-controls">
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 <PeopleAltRoundedIcon />
                 <b>{participantsCount}</b>
               </div>
 
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  flexWrap: "wrap",
+                }}
+              >
                 {!inCall ? (
                   <Button
                     variant="contained"
@@ -1004,29 +985,17 @@ function Chat({ socket, messages, setMessages }) {
 function RemoteVideo({ peerId, stream }) {
   const ref = useRef(null);
   useEffect(() => {
-    if (ref.current) ref.current.srcObject = stream;
+    if (!ref.current) return;
+    ref.current.srcObject = stream;
+    ref.current.play?.().catch((err) => {
+      console.log("error", err);
+    });
   }, [stream]);
+
   return (
-    <div
-      style={{
-        position: "relative",
-        background: "#000",
-        borderRadius: 12,
-        overflow: "hidden",
-      }}
-    >
-      <video
-        ref={ref}
-        autoPlay
-        playsInline
-        style={{
-          width: "100%",
-          height: 240,
-          objectFit: "cover",
-          display: "block",
-        }}
-      />
-      <div style={{ position: "absolute", bottom: 8, left: 8 }}>
+    <div className="tile">
+      <video ref={ref} autoPlay playsInline className="tile__video" />
+      <div className="tile__badges">
         <Chip size="small" label={peerId.slice(0, 6)} />
       </div>
     </div>

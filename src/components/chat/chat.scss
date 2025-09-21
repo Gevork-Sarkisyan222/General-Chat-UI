@@ -505,3 +505,117 @@
     }
   }
 }
+
+/* ===== Call modal responsive ===== */
+
+.call-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.65);
+  padding: clamp(8px, 2.5vw, 24px);
+}
+
+/* Учитываем вырезы на iOS */
+@supports (padding: max(0px)) {
+  .call-modal {
+    padding-top: max(12px, env(safe-area-inset-top));
+    padding-right: max(12px, env(safe-area-inset-right));
+    padding-bottom: max(12px, env(safe-area-inset-bottom));
+    padding-left: max(12px, env(safe-area-inset-left));
+  }
+}
+
+.call-card {
+  width: clamp(320px, 94vw, 1280px);
+  height: clamp(520px, 90vh, 880px);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.98),
+    rgba(247, 247, 249, 0.98)
+  );
+  border-radius: 16px;
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(17, 24, 39, 0.12);
+  backdrop-filter: blur(6px);
+}
+
+/* На очень больших десктопах делаем больше */
+@media (min-width: 1400px) {
+  .call-card {
+    width: clamp(640px, 90vw, 1440px);
+    height: clamp(600px, 90vh, 980px);
+  }
+}
+
+.call-grid {
+  padding: clamp(8px, 2vw, 16px);
+  display: grid;
+  grid-template-columns: 1fr; /* мобилки — одна колонка */
+  gap: clamp(8px, 1.6vw, 16px);
+  align-content: start;
+}
+
+/* планшеты и выше — авто-сетка */
+@media (min-width: 600px) {
+  .call-grid {
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  }
+}
+@media (min-width: 900px) {
+  .call-grid {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  }
+}
+@media (min-width: 1400px) {
+  .call-grid {
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  }
+}
+
+.tile {
+  position: relative;
+  background: #000;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.tile__video {
+  width: 100%;
+  height: clamp(180px, 28vh, 380px); /* авто-подбор высоты под экран */
+  object-fit: cover;
+  display: block;
+  background: #000;
+}
+
+.tile__badges {
+  position: absolute;
+  left: 8px;
+  bottom: 8px;
+  display: flex;
+  gap: 6px;
+}
+
+.call-controls {
+  border-top: 1px solid rgba(17, 24, 39, 0.08);
+  background: rgba(255, 255, 255, 0.9);
+  padding: clamp(8px, 1.8vw, 14px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap; /* чтобы кнопки не уезжали за экран на мобилках */
+}
+
+/* На очень узких экранах кнопки в 2 строки */
+@media (max-width: 420px) {
+  .call-controls {
+    gap: 8px;
+  }
+}
