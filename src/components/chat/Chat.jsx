@@ -271,11 +271,11 @@ function Chat({ socket, messages, setMessages }) {
       iceServers: [
         { urls: "stun:stun.l.google.com:19302" },
         // прод: свой TURN
-        {
-          urls: ["turn:YOUR_TURN_HOST:3478"], // или turns:... для TLS
-          username: "turnUser",
-          credential: "turnPass",
-        },
+        // {
+        //   urls: ["turn:YOUR_TURN_HOST:3478"], // или turns:... для TLS
+        //   username: "turnUser",
+        //   credential: "turnPass",
+        // },
       ],
       // опционально:
       // iceTransportPolicy: "all",
@@ -506,6 +506,66 @@ function Chat({ socket, messages, setMessages }) {
         p.signal(sdp); // передаём offer в simple-peer
       } catch (e) {
         console.error("signal offer failed", e);
+      }
+    });
+
+    // === Маппинг сигналов на simple-peer.signal ===
+    socket.current.off("call:offer");
+    socket.current.on("call:offer", async ({ fromSocketId, sdp }) => {
+      const p = createPeer(fromSocketId, false); // мы НЕ инициатор
+
+      // (твой watchdog остаётся как есть)
+      const watchdog = setTimeout(() => {
+        if (!remoteStreamsRef.current.has(fromSocketId)) {
+          try {
+            p.destroy();
+          } catch {}
+          peersRef.current.delete(fromSocketId);
+        }
+      }, 12000);
+      p.on("stream", () => clearTimeout(watchdog));
+      p.on("close", () => clearTimeout(watchdog));
+      p.on("error", () => clearTimeout(watchdog));
+
+      try {
+        p.signal(sdp); // прокидываем OFFER в simple-peer
+      } catch (e) {
+        console.error("signal offer failed", e);
+      }
+    });
+
+    // ⬇⬇⬇ ЭТОГО БЛОКА НЕ ХВАТАЛО ⬇⬇⬇
+    socket.current.off("call:offer");
+    socket.current.on("call:offer", async ({ fromSocketId, sdp }) => {
+      const p = createPeer(fromSocketId, false); // мы НЕ инициатор
+
+      // (твой watchdog остаётся как есть)
+      const watchdog = setTimeout(() => {
+        if (!remoteStreamsRef.current.has(fromSocketId)) {
+          try {
+            p.destroy();
+          } catch {}
+          peersRef.current.delete(fromSocketId);
+        }
+      }, 12000);
+      p.on("stream", () => clearTimeout(watchdog));
+      p.on("close", () => clearTimeout(watchdog));
+      p.on("error", () => clearTimeout(watchdog));
+
+      try {
+        p.signal(sdp); // прокидываем OFFER в simple-peer
+      } catch (e) {
+        console.error("signal offer failed", e);
+      }
+    });
+    socket.current.off("call:ice");
+    socket.current.on("call:ice", async ({ fromSocketId, candidate }) => {
+      const p = peersRef.current.get(fromSocketId);
+      if (!p) return;
+      try {
+        p.signal(candidate); // trickle ICE
+      } catch (e) {
+        console.error("signal ice failed", e);
       }
     });
 
