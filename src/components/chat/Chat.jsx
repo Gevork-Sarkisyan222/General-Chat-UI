@@ -450,13 +450,12 @@ function Chat({ socket, messages, setMessages }) {
 
   // Навеска/снятие событий сигналинга (через твой Socket.IO)
   const bindCallSocketEvents = () => {
-    // существующие участники — мы инициаторы
+    // список пиров в комнате — НОВЫЙ (вошедший) делает offer каждому
     socket.current.off("call:peers");
     socket.current.on("call:peers", async ({ peers }) => {
       for (const peerSid of peers) {
-        const p = createPeer(peerSid, true); // мы инициатор
+        const p = createPeer(peerSid, true); // инициатор
 
-        // WATCHDOG: если за 12с не пришёл стрим — прибьём peer и дадим шансу пересоздаться
         const watchdog = setTimeout(() => {
           if (!remoteStreamsRef.current.has(peerSid)) {
             try {
@@ -465,7 +464,6 @@ function Chat({ socket, messages, setMessages }) {
             peersRef.current.delete(peerSid);
           }
         }, 12000);
-
         p.on("stream", () => clearTimeout(watchdog));
         p.on("close", () => clearTimeout(watchdog));
         p.on("error", () => clearTimeout(watchdog));
@@ -474,8 +472,7 @@ function Chat({ socket, messages, setMessages }) {
 
     socket.current.off("call:peer-joined");
     socket.current.on("call:peer-joined", ({ socketId }) => {
-      // Новый участник сам пришлёт offer -> обработаем в 'call:offer'
-      // Счётчик обновится при появлении его стрима
+      // инфо, если надо показать UI, offer придёт как 'call:offer'
     });
 
     socket.current.off("call:peer-left");
@@ -484,37 +481,11 @@ function Chat({ socket, messages, setMessages }) {
     });
 
     // === Маппинг сигналов на simple-peer.signal ===
+    // Получили OFFER -> мы не инициатор
     socket.current.off("call:offer");
     socket.current.on("call:offer", async ({ fromSocketId, sdp }) => {
-      const p = createPeer(fromSocketId, false); // мы НЕ инициатор
+      const p = createPeer(fromSocketId, false); // не инициатор
 
-      // WATCHDOG
-      const watchdog = setTimeout(() => {
-        if (!remoteStreamsRef.current.has(fromSocketId)) {
-          try {
-            p.destroy();
-          } catch {}
-          peersRef.current.delete(fromSocketId);
-        }
-      }, 12000);
-
-      p.on("stream", () => clearTimeout(watchdog));
-      p.on("close", () => clearTimeout(watchdog));
-      p.on("error", () => clearTimeout(watchdog));
-
-      try {
-        p.signal(sdp); // передаём offer в simple-peer
-      } catch (e) {
-        console.error("signal offer failed", e);
-      }
-    });
-
-    // === Маппинг сигналов на simple-peer.signal ===
-    socket.current.off("call:offer");
-    socket.current.on("call:offer", async ({ fromSocketId, sdp }) => {
-      const p = createPeer(fromSocketId, false); // мы НЕ инициатор
-
-      // (твой watchdog остаётся как есть)
       const watchdog = setTimeout(() => {
         if (!remoteStreamsRef.current.has(fromSocketId)) {
           try {
@@ -534,47 +505,25 @@ function Chat({ socket, messages, setMessages }) {
       }
     });
 
-    // ⬇⬇⬇ ЭТОГО БЛОКА НЕ ХВАТАЛО ⬇⬇⬇
-    socket.current.off("call:offer");
-    socket.current.on("call:offer", async ({ fromSocketId, sdp }) => {
-      const p = createPeer(fromSocketId, false); // мы НЕ инициатор
-
-      // (твой watchdog остаётся как есть)
-      const watchdog = setTimeout(() => {
-        if (!remoteStreamsRef.current.has(fromSocketId)) {
-          try {
-            p.destroy();
-          } catch {}
-          peersRef.current.delete(fromSocketId);
-        }
-      }, 12000);
-      p.on("stream", () => clearTimeout(watchdog));
-      p.on("close", () => clearTimeout(watchdog));
-      p.on("error", () => clearTimeout(watchdog));
-
+    // ⬇️ ЭТО ВАЖНО: инициатор должен принять ANSWER
+    socket.current.off("call:answer");
+    socket.current.on("call:answer", async ({ fromSocketId, sdp }) => {
+      const p = peersRef.current.get(fromSocketId);
+      if (!p) return;
       try {
-        p.signal(sdp); // прокидываем OFFER в simple-peer
+        p.signal(sdp); // прокидываем ANSWER в simple-peer
       } catch (e) {
-        console.error("signal offer failed", e);
+        console.error("signal answer failed", e);
       }
     });
+
+    // Trickle ICE в обе стороны
     socket.current.off("call:ice");
     socket.current.on("call:ice", async ({ fromSocketId, candidate }) => {
       const p = peersRef.current.get(fromSocketId);
       if (!p) return;
       try {
-        p.signal(candidate); // trickle ICE
-      } catch (e) {
-        console.error("signal ice failed", e);
-      }
-    });
-
-    socket.current.off("call:ice");
-    socket.current.on("call:ice", async ({ fromSocketId, candidate }) => {
-      const p = peersRef.current.get(fromSocketId);
-      if (!p) return;
-      try {
-        p.signal(candidate); // trickle ICE
+        p.signal(candidate);
       } catch (e) {
         console.error("signal ice failed", e);
       }
