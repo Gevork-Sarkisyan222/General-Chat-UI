@@ -508,92 +508,77 @@
 
 /* ===== Call modal responsive ===== */
 
-.call-modal {
+.call-surface {
   position: fixed;
   inset: 0;
-  z-index: 1300;
+  z-index: 1200;
+  background: #fff;
+  display: grid;
+  grid-template-rows: auto 1fr; /* topbar + main; панель снизу плавающая */
+}
+
+/* Верхняя узкая панель */
+.call-topbar {
+  height: 52px;
   display: flex;
   align-items: center;
-  justify-content: center;
-  background: rgba(0, 0, 0, 0.65);
-  padding: clamp(8px, 2.5vw, 24px);
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-bottom: 1px solid rgba(17, 24, 39, 0.08);
+  background: #fff;
+}
+.call-topbar__left,
+.call-topbar__right {
+  display: flex;
+  align-items: center;
 }
 
-/* Учитываем вырезы на iOS */
-@supports (padding: max(0px)) {
-  .call-modal {
-    padding-top: max(12px, env(safe-area-inset-top));
-    padding-right: max(12px, env(safe-area-inset-right));
-    padding-bottom: max(12px, env(safe-area-inset-bottom));
-    padding-left: max(12px, env(safe-area-inset-left));
-  }
+/* Область для сетки — без скролла, контент всегда вписывается */
+.call-main {
+  position: relative;
+  min-height: 0;
+  overflow: hidden; /* никакого скролла при 2/3/5 участниках */
+  padding: clamp(8px, 1.5vw, 16px);
+  background: #fff;
 }
 
-.call-card {
-  width: clamp(320px, 94vw, 1280px);
-  height: clamp(520px, 90vh, 880px);
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.98),
-    rgba(247, 247, 249, 0.98)
-  );
-  border-radius: 16px;
-  overflow: hidden;
-  display: grid;
-  grid-template-rows: 1fr auto;
-  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.35);
-  border: 1px solid rgba(17, 24, 39, 0.12);
-  backdrop-filter: blur(6px);
-}
-
-/* На очень больших десктопах делаем больше */
-@media (min-width: 1400px) {
-  .call-card {
-    width: clamp(640px, 90vw, 1440px);
-    height: clamp(600px, 90vh, 980px);
-  }
-}
-
+/* ===== Сетка тайлов ===== */
 .call-grid {
-  padding: clamp(8px, 2vw, 16px);
+  position: absolute;
+  inset: clamp(8px, 1.5vw, 16px);
   display: grid;
-  grid-template-columns: 1fr; /* мобилки — одна колонка */
-  gap: clamp(8px, 1.6vw, 16px);
-  align-content: start;
+  grid-template-columns: repeat(var(--cols, 1), var(--tile-w, 320px));
+  grid-auto-rows: var(--tile-h, 180px);
+  gap: clamp(8px, 1vw, 12px);
+  place-content: center; /* центрируем сетку в доступной области */
 }
 
-/* планшеты и выше — авто-сетка */
-@media (min-width: 600px) {
-  .call-grid {
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  }
-}
-@media (min-width: 900px) {
-  .call-grid {
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  }
-}
-@media (min-width: 1400px) {
-  .call-grid {
-    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
-  }
+/* Один участник — крупнее */
+.call-grid--solo {
+  place-content: center;
 }
 
+/* ===== Плитка и видео ===== */
 .tile {
   position: relative;
-  background: #000;
+  width: var(--tile-w, 320px);
+  height: var(--tile-h, 180px);
   border-radius: 12px;
+  background: #000;
   overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
 }
 
+/* Видео без чёрных полос */
 .tile__video {
   width: 100%;
-  height: clamp(180px, 28vh, 380px); /* авто-подбор высоты под экран */
-  object-fit: cover;
-  display: block;
+  height: 100%;
+  object-fit: cover; /* <- убрали черные рамки (cover вместо contain) */
   background: #000;
+  display: block;
 }
 
+/* Бейджи в углу */
 .tile__badges {
   position: absolute;
   left: 8px;
@@ -602,20 +587,862 @@
   gap: 6px;
 }
 
-.call-controls {
-  border-top: 1px solid rgba(17, 24, 39, 0.08);
-  background: rgba(255, 255, 255, 0.9);
-  padding: clamp(8px, 1.8vw, 14px);
+/* ===== Плавающая панель управления (как в Zoom/Teams) ===== */
+.call-toolbar {
+  position: fixed;
+  left: 50%;
+  bottom: max(16px, env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  padding: 8px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(17, 24, 39, 0.12);
+  box-shadow: 0 10px 30px rgba(17, 24, 39, 0.12);
+}
+
+@media (max-width: 640px) {
+  .call-toolbar {
+    gap: 6px;
+    padding: 6px 8px;
+  }
+}
+
+@media (max-width: 900px) {
+  /* общий инсет поменьше, чтобы влезало без скролла */
+  .call-main {
+    padding: 8px;
+  }
+  .call-grid {
+    inset: 8px;
+    gap: 8px;
+  }
+}
+
+@media (max-width: 680px) {
+  /* 2 участника — вертикальный стек 16:9 (как было) */
+  .call-grid--m2 {
+    position: absolute;
+    inset: 8px;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+    place-content: center;
+  }
+  .call-grid--m2 .tile {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 9;
+    border-radius: 10px;
+  }
+
+  /* 3 участника — stage + два превью (как было) */
+  .call-grid--m3 {
+    position: absolute;
+    inset: 8px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    place-content: center;
+  }
+  .call-grid--m3 .tile {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 9;
+    border-radius: 10px;
+  }
+  .call-grid--m3 .tile--stage {
+    grid-column: 1 / -1; /* верхняя плитка на всю ширину */
+  }
+
+  /* НОВОЕ: 4+ участников — компактная 2-колоночная сетка */
+  .call-grid--mc {
+    position: absolute;
+    inset: 8px;
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* 2 колонки */
+    gap: 8px;
+    place-content: center;
+  }
+  .call-grid--mc .tile {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 9; /* всегда 16:9 без чёрных полос */
+    border-radius: 10px;
+  }
+
+  /* чтобы панель не перекрывала плитки */
+  .call-toolbar {
+    bottom: max(10px, env(safe-area-inset-bottom));
+    padding: 6px 8px;
+    gap: 6px;
+  }
+}
+
+/* =========================
+   Chat — бело-серая тема
+   ========================= */
+
+/* Глобально: на мобиле страница не скроллится, высота на всю область */
+@media (max-width: 600px) {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+  body {
+    overflow: hidden; /* скролл только у .chat-area */
+  }
+}
+
+:root {
+  --chat-bg: #ffffff; /* основной фон карточки чата */
+  --chat-surface: #f7f7f8; /* вспомогательные светло-серые поверхности */
+  --chat-border: rgba(17, 24, 39, 0.08);
+  --chat-border-strong: rgba(17, 24, 39, 0.16);
+  --chat-shadow: 0 8px 24px rgba(17, 24, 39, 0.08);
+
+  --bubble-in: #ffffff; /* мой пузырёк (светлый) */
+  --bubble-out: #f3f4f6; /* чужой пузырёк (сероватый) */
+
+  --divider: #e6e7eb;
+  --text-primary: #111317;
+  --text-secondary: #6b7280;
+  --glass: rgba(255, 255, 255, 0.92); /* стеклянный блок для write-area */
+}
+
+/* корневой центринг и отступ сверху */
+.Chat {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  margin-top: 20px;
+  padding-inline: 10px;
+}
+
+/* обёртка чата */
+.Chat .Wrapper {
+  width: min(65%, 1100px);
+  height: min(85vh, calc(100vh - 40px));
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+
+  border-radius: 16px;
+  padding: 0;
+  background: var(--White-white, var(--chat-bg));
+  box-shadow: var(--chat-shadow);
+  border: 1px solid var(--chat-border);
+
+  /* если в инлайне приходит backgroundImage */
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+
+  /* ===== header ===== */
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    background: linear-gradient(180deg, #ffffff 0%, #f6f7f9 100%);
+    backdrop-filter: blur(8px);
+    padding: 14px 18px 10px;
+    text-align: center;
+    border-bottom: 1px solid var(--chat-border);
+
+    h2 {
+      margin: 0 0 8px 0;
+      font-size: clamp(16px, 2.2vw, 20px);
+      font-weight: 800;
+      color: var(--text-primary);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    h3 {
+      margin: 8px 0 10px;
+      font-size: clamp(14px, 1.8vw, 18px);
+      font-weight: 700;
+      color: var(--text-secondary);
+    }
+
+    .line {
+      width: 100%;
+      height: 1px;
+      background: var(--divider);
+      box-shadow: 0 1px 0 rgba(0, 0, 0, 0.02);
+      margin-top: 6px;
+    }
+  }
+
+  /* ===== нижний блок: список + инпут ===== */
+  .down-chat-section {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0; /* КЛЮЧ: разрешаем .chat-area получить собственный скролл */
+    overflow: hidden; /* исключаем внешний скролл */
+  }
+
+  /* ===== список сообщений ===== */
+  .chat-area {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+
+    padding: clamp(12px, 2.4vw, 20px) clamp(10px, 2.4vw, 24px);
+    padding-bottom: clamp(84px, 12vh, 120px); /* запас под write-area */
+
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+
+    &::-webkit-scrollbar {
+      width: 10px;
+    }
+    &::-webkit-scrollbar-thumb {
+      background: #d5d8de;
+      border-radius: 999px;
+      border: 2px solid transparent;
+      background-clip: padding-box;
+    }
+
+    /* твоя вложенная структура сохранена */
+    .Chat-Section {
+      display: flex;
+      align-items: flex-end;
+      gap: 10px;
+
+      > div[style*="justify-content"] {
+        margin-inline-start: 6px;
+      }
+
+      .Message-Section {
+        position: relative;
+        display: inline-flex;
+        flex-direction: column;
+        align-items: flex-start;
+
+        max-width: min(78%, 640px);
+        width: max-content;
+
+        background: var(--bubble-out);
+        color: #111;
+        border-radius: 14px;
+        padding: 10px 12px 12px 12px;
+        box-shadow: 0 2px 8px rgba(17, 24, 39, 0.05);
+
+        .name {
+          position: static;
+          margin: 0 0 2px 0;
+          font-size: 12px;
+          font-weight: 700;
+          color: var(--text-secondary);
+        }
+
+        .role {
+          position: static;
+          margin: -2px 0 6px 0;
+          font-size: 11px;
+          color: #8d9096;
+          font-weight: 600;
+        }
+
+        .text-place {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 10px;
+          width: 100%;
+
+          .text {
+            margin: 0;
+            font-size: 14px;
+            line-height: 1.5;
+            word-break: break-word;
+            white-space: pre-wrap;
+            color: #1f2328;
+          }
+        }
+
+        .image {
+          width: auto;
+          height: auto;
+          margin: 6px 0 0 0;
+
+          img {
+            display: block;
+            width: min(220px, 60vw);
+            max-height: 320px;
+            object-fit: cover;
+            border-radius: 10px;
+            cursor: zoom-in;
+            box-shadow: 0 4px 12px rgba(17, 24, 39, 0.1);
+            background: #fafafa;
+          }
+        }
+      }
+    }
+  }
+
+  /* ===== WriteArea — видна, прилипающая снизу ===== */
+  .write-area {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    flex-shrink: 0;
+
+    @media (max-width: 600px) {
+      bottom: 65px;
+    }
+
+    padding: 10px clamp(10px, 2.4vw, 18px);
+    padding-bottom: calc(10px + env(safe-area-inset-bottom));
+
+    background: var(--glass);
+    backdrop-filter: blur(8px);
+    border-top: 1px solid var(--chat-border);
+    box-shadow: 0 -6px 18px rgba(17, 24, 39, 0.06);
+
+    > * {
+      width: 100%;
+    }
+
+    input[type="text"],
+    textarea {
+      width: 100%;
+      border-radius: 12px;
+      border: 1px solid var(--chat-border);
+      padding: 12px 14px;
+      font-size: 14px;
+      outline: none;
+      background: #ffffff;
+      color: #1f2328;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+      &::placeholder {
+        color: #a1a6ae;
+      }
+
+      &:focus {
+        border-color: var(--chat-border-strong);
+        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.12);
+      }
+    }
+  }
+
+  /* ===== прочее из твоего файла — сохранено ===== */
+}
+
+/* ========= адаптив ========= */
+
+@media (max-width: 1200px) {
+  .Chat .Wrapper {
+    width: 86%;
+  }
+}
+
+@media (max-width: 900px) {
+  .Chat .Wrapper {
+    width: 92%;
+    border-radius: 14px;
+  }
+
+  .Chat .Wrapper .chat-area {
+    gap: 14px;
+    padding: 14px 14px;
+  }
+
+  .Chat .Wrapper .chat-area .Chat-Section .Message-Section {
+    max-width: min(84%, 560px);
+    .text-place .text {
+      font-size: 13.5px;
+    }
+  }
+}
+
+@media (max-width: 600px) {
+  .Chat {
+    padding-inline: 0;
+    margin-top: 0;
+  }
+
+  .Chat .Wrapper {
+    width: 100%;
+    height: 100dvh; /* мобайл: ровно по видимой области */
+    border-radius: 0;
+    border: none;
+    box-shadow: none;
+    background: #ffffff;
+  }
+
+  .Chat .Wrapper header {
+    padding: 12px 12px 8px;
+    background: linear-gradient(180deg, #ffffff 0%, #f7f7f8 100%);
+  }
+
+  .Chat .Wrapper .down-chat-section {
+    min-height: 0; /* чтобы .chat-area могла скроллиться */
+    overflow: hidden;
+  }
+
+  .Chat .Wrapper .chat-area {
+    gap: 12px;
+    padding: 10px 10px;
+    padding-bottom: 110px; /* запас под WriteArea */
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .Chat .Wrapper .chat-area .Chat-Section {
+    gap: 8px;
+
+    .Message-Section {
+      max-width: 88%;
+      border-radius: 12px;
+      padding: 10px 10px 11px;
+      background: var(--bubble-out);
+
+      .name {
+        font-size: 11.5px;
+      }
+      .role {
+        font-size: 10.5px;
+      }
+      .text-place .text {
+        font-size: 13px;
+      }
+      .image img {
+        width: min(68vw, 240px);
+        max-height: 260px;
+      }
+    }
+  }
+
+  .Chat .Wrapper .write-area {
+    padding: 10px 10px calc(10px + env(safe-area-inset-bottom));
+    background: rgba(255, 255, 255, 0.96);
+    border-top-color: var(--chat-border);
+    backdrop-filter: blur(10px);
+  }
+}
+
+/* ========= лёгкий серый инсет для читаемости на очень светлых фото ========= */
+.Chat .Wrapper::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+      ellipse at bottom,
+      rgba(17, 24, 39, 0.06),
+      transparent 50%
+    ),
+    radial-gradient(ellipse at top, rgba(17, 24, 39, 0.04), transparent 60%);
+  opacity: 0.35; /* ослабил для бело-серой темы */
+}
+
+/* На системной тёмной теме слегка усиливаем границы, но остаёмся светлыми */
+@media (prefers-color-scheme: dark) {
+  .Chat .Wrapper {
+    border-color: rgba(255, 255, 255, 0.12);
+    background: #ffffff; /* оставляем светлый чат */
+  }
+  .Chat .Wrapper header {
+    background: linear-gradient(180deg, #ffffff 0%, #f6f7f9 100%);
+  }
+  .Chat .Wrapper .write-area {
+    background: rgba(255, 255, 255, 0.96);
+    border-top-color: rgba(17, 24, 39, 0.1);
+  }
+}
+
+/* из твоего файла — для модалок/скролла и т.д. */
+.scroll-place {
+  width: 100%;
+  height: 100%;
+}
+
+.modal-image {
+  object-fit: cover;
+}
+
+/* Шапка чата: стекло, липкая, бело-серая тема */
+.chat-header {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  background: linear-gradient(180deg, #fff 0%, #f7f7f9 100%);
+  backdrop-filter: blur(8px);
+  padding: 12px 14px 8px;
+  border-bottom: 1px solid rgba(17, 24, 39, 0.08);
+
+  .chat-header__top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .chat-header__title {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+
+    .chat-header__name {
+      margin: 0;
+      font-weight: 800;
+      letter-spacing: 0.2px;
+      font-size: clamp(16px, 2.2vw, 20px);
+      color: #111317;
+      line-height: 1.1;
+    }
+
+    .chat-header__edit {
+      cursor: pointer;
+      color: #9aa0a6;
+      transition: transform 0.15s ease, color 0.15s ease, opacity 0.15s ease;
+      opacity: 0.9;
+
+      &:hover {
+        color: #6b7280;
+        transform: rotate(-6deg) scale(1.05);
+        opacity: 1;
+      }
+      &:active {
+        transform: rotate(-4deg) scale(1.02);
+      }
+    }
+  }
+
+  .chat-header__online {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: #f1f2f4;
+    color: #1f2328;
+    font-weight: 700;
+    font-size: 13px;
+    white-space: nowrap;
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #22c55e; /* зелёная точка */
+      box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.15);
+    }
+    .count {
+      font-variation-settings: "wght" 750;
+    }
+    .label {
+      color: #6b7280;
+      font-weight: 600;
+    }
+  }
+
+  .chat-header__avatars {
+    margin-top: 10px;
+    display: flex;
+    justify-content: center;
+  }
+
+  .line {
+    margin-top: 10px;
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #e6e7eb, transparent);
+  }
+}
+
+/* Адаптив: на узких экранах онлайн уходит под заголовок слева */
+@media (max-width: 520px) {
+  .chat-header {
+    padding: 10px 10px 6px;
+
+    .chat-header__top {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 8px;
+    }
+
+    .chat-header__online {
+      align-self: flex-start;
+      padding: 5px 9px;
+      font-size: 12.5px;
+    }
+
+    .chat-header__avatars {
+      margin-top: 8px;
+    }
+  }
+}
+
+/* ===== Call modal responsive ===== */
+
+.call-surface {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  background: #fff;
+  display: grid;
+  grid-template-rows: auto 1fr; /* topbar + main; панель снизу плавающая */
+}
+
+/* Верхняя узкая панель */
+.call-topbar {
+  height: 52px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap; /* чтобы кнопки не уезжали за экран на мобилках */
+  padding: 8px 12px;
+  border-bottom: 1px solid rgba(17, 24, 39, 0.08);
+  background: #fff;
+}
+.call-topbar__left,
+.call-topbar__right {
+  display: flex;
+  align-items: center;
 }
 
-/* На очень узких экранах кнопки в 2 строки */
-@media (max-width: 420px) {
-  .call-controls {
+/* Область для сетки — без скролла, контент всегда вписывается */
+.call-main {
+  position: relative;
+  min-height: 0;
+  overflow: hidden; /* никакого скролла при 2/3/5 участниках */
+  padding: clamp(8px, 1.5vw, 16px);
+  background: #fff;
+}
+
+/* ===== Сетка тайлов ===== */
+.call-grid {
+  position: absolute;
+  inset: clamp(8px, 1.5vw, 16px);
+  display: grid;
+  grid-template-columns: repeat(var(--cols, 1), var(--tile-w, 320px));
+  grid-auto-rows: var(--tile-h, 180px);
+  gap: clamp(8px, 1vw, 12px);
+  place-content: center; /* центрируем сетку в доступной области */
+}
+
+/* Один участник — крупнее */
+.call-grid--solo {
+  place-content: center;
+}
+
+/* ===== Плитка и видео ===== */
+.tile {
+  position: relative;
+  width: var(--tile-w, 320px);
+  height: var(--tile-h, 180px);
+  border-radius: 12px;
+  background: #000;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
+}
+
+/* Видео без чёрных полос */
+.tile__video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* <- убрали черные рамки (cover вместо contain) */
+  background: #000;
+  display: block;
+}
+
+/* Бейджи в углу */
+.tile__badges {
+  position: absolute;
+  left: 8px;
+  bottom: 8px;
+  display: flex;
+  gap: 6px;
+}
+
+/* ===== Плавающая панель управления (как в Zoom/Teams) ===== */
+.call-toolbar {
+  position: fixed;
+  left: 50%;
+  bottom: max(16px, env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  padding: 8px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(17, 24, 39, 0.12);
+  box-shadow: 0 10px 30px rgba(17, 24, 39, 0.12);
+}
+
+@media (max-width: 640px) {
+  .call-toolbar {
+    gap: 6px;
+    padding: 6px 8px;
+  }
+}
+
+@media (max-width: 900px) {
+  /* общий инсет поменьше, чтобы влезало без скролла */
+  .call-main {
+    padding: 8px;
+  }
+  .call-grid {
+    inset: 8px;
     gap: 8px;
+  }
+}
+
+@media (max-width: 680px) {
+  /* 2 участника — вертикальный стек 16:9 (как было) */
+  .call-grid--m2 {
+    position: absolute;
+    inset: 8px;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+    place-content: center;
+  }
+  .call-grid--m2 .tile {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 9;
+    border-radius: 10px;
+  }
+
+  /* 3 участника — stage + два превью (как было) */
+  .call-grid--m3 {
+    position: absolute;
+    inset: 8px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    place-content: center;
+  }
+  .call-grid--m3 .tile {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 9;
+    border-radius: 10px;
+  }
+  .call-grid--m3 .tile--stage {
+    grid-column: 1 / -1; /* верхняя плитка на всю ширину */
+  }
+
+  /* НОВОЕ: 4+ участников — компактная 2-колоночная сетка */
+  .call-grid--mc {
+    position: absolute;
+    inset: 8px;
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* 2 колонки */
+    gap: 8px;
+    place-content: center;
+  }
+  .call-grid--mc .tile {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 9; /* всегда 16:9 без чёрных полос */
+    border-radius: 10px;
+  }
+
+  /* чтобы панель не перекрывала плитки */
+  .call-toolbar {
+    bottom: max(10px, env(safe-area-inset-bottom));
+    padding: 6px 8px;
+    gap: 6px;
+  }
+}
+
+@media (max-width: 520px) {
+  .call-grid {
+    gap: 10px;
+  } // совпадает с GAP из JS
+}
+
+@media (max-width: 810px) {
+  /* MOBILE GRID — override everything */
+  .call-grid {
+    position: absolute !important;
+    inset: 8px !important;
+    display: grid !important;
+    /* умная авто-сетка: 1–2 тайла крупно, 3+ — две колонки */
+    grid-template-columns: repeat(
+      auto-fit,
+      minmax(min(320px, 48vw), 1fr)
+    ) !important;
+    grid-auto-rows: 1fr !important;
+    gap: 10px !important;
+    place-content: center !important;
+    align-content: start !important;
+    padding-bottom: max(
+      68px,
+      env(safe-area-inset-bottom)
+    ) !important; /* под тулбар */
+  }
+
+  /* 1 тайл — на всю ширину */
+  .call-grid:has(> .tile:only-child) {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* 3+ тайлов — принудительно 2 колонки */
+  .call-grid:has(> .tile:nth-child(3)) {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  .call-grid .tile {
+    width: 100% !important;
+    height: auto !important;
+    aspect-ratio: 16 / 9 !important;
+    border-radius: 12px !important;
+    overflow: hidden !important;
+    background: #000 !important;
+    border: 1px solid rgba(17, 24, 39, 0.12) !important;
+    box-shadow: 0 4px 14px rgba(17, 24, 39, 0.12) !important;
+  }
+
+  .call-grid .tile__video {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    display: block !important;
+  }
+
+  .call-grid .tile__badges {
+    position: absolute !important;
+    left: 8px !important;
+    bottom: 8px !important;
+    display: flex !important;
+    gap: 6px !important;
+  }
+
+  /* подсветка говорящего — мягкая */
+  .call-grid .tile--speaking.tile--self {
+    box-shadow: 0 0 0 2px #3b82f6, 0 0 0 6px rgba(59, 130, 246, 0.18) !important;
+    border-color: #3b82f6 !important;
+  }
+  .call-grid .tile--speaking:not(.tile--self) {
+    box-shadow: 0 0 0 2px #22c55e, 0 0 0 6px rgba(34, 197, 94, 0.16) !important;
+    border-color: #22c55e !important;
+  }
+
+  /* чтобы панель управления не перекрывала сетку */
+  .call-toolbar {
+    bottom: max(12px, env(safe-area-inset-bottom)) !important;
   }
 }
