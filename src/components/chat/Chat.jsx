@@ -1018,38 +1018,44 @@ function Chat({ socket, messages, setMessages }) {
 // NEW(WebRTC + simple-peer): компонент удалённого видео
 function RemoteVideo({ peerId, stream }) {
   const ref = useRef(null);
-  const [muted, setMuted] = useState(true);
+  const [needsTap, setNeedsTap] = useState(false); // на случай, если браузер заблокирует autoplay
 
   useEffect(() => {
-    if (!ref.current) return;
-    ref.current.srcObject = stream;
-    // пробуем автоплей
-    ref.current.play?.().catch(() => {});
+    const el = ref.current;
+    if (!el) return;
+
+    el.srcObject = stream;
+    el.muted = false; // ВАЖНО: не мьютим удалённого участника
+    el.volume = 1.0; // на всякий случай
+    el.playsInline = true;
+
+    const tryPlay = async () => {
+      try {
+        await el.play(); // попытка автоплея со звуком
+        setNeedsTap(false);
+      } catch {
+        // Если браузер (особенно iOS/Safari) заблокировал незаметный autoplay — покажем мягкий фоллбек
+        setNeedsTap(true);
+      }
+    };
+
+    tryPlay();
   }, [stream]);
 
   return (
-    <div className="tile">
-      <video
-        ref={ref}
-        autoPlay
-        playsInline
-        muted={muted} // ключевой момент для autoplay
-        className="tile__video"
-      />
+    <div
+      className="tile"
+      onClick={() => {
+        // Фоллбек: один тап по плитке разблокирует звук, если вдруг был заблокирован политикой браузера
+        if (!ref.current) return;
+        ref.current.play?.().catch(() => {});
+      }}
+    >
+      <video ref={ref} autoPlay playsInline className="tile__video" />
       <div className="tile__badges">
         <Chip size="small" label={peerId.slice(0, 6)} />
-        {muted && (
-          <Button
-            size="small"
-            onClick={() => {
-              if (!ref.current) return;
-              ref.current.muted = false;
-              setMuted(false);
-              ref.current.play?.().catch(() => {});
-            }}
-          >
-            Включить звук
-          </Button>
+        {needsTap && (
+          <Chip size="small" color="warning" label="Нажмите для звука" />
         )}
       </div>
     </div>
