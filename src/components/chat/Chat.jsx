@@ -33,6 +33,8 @@ import VideocamOffRoundedIcon from "@mui/icons-material/VideocamOffRounded";
 import ScreenShareRoundedIcon from "@mui/icons-material/ScreenShareRounded";
 import StopScreenShareRoundedIcon from "@mui/icons-material/StopScreenShareRounded";
 import PeopleAltRoundedIcon from "@mui/icons-material/PeopleAltRounded";
+import CallGrid from "./videocall/CallGrid.jsx";
+import VideoCallSection from "./videocall/VideoCallSection.jsx";
 
 const style = {
   position: "absolute",
@@ -794,103 +796,24 @@ function Chat({ socket, messages, setMessages }) {
       </div>
 
       {/* NEW(WebRTC + simple-peer): модалка звонка */}
-      {/* FULLSCREEN CALL SURFACE (вместо модалки) */}
       {callOpen && (
-        <div className="call-surface">
-          {/* Верхняя полоска */}
-          <div className="call-topbar">
-            <div className="call-topbar__left">
-              <strong>Звонок</strong>
-              <Chip
-                size="small"
-                sx={{ ml: 1 }}
-                label={`${participantsCount} участник(а)`}
-              />
-            </div>
-            <div className="call-topbar__right">
-              <Button variant="text" onClick={() => setCallOpen(false)}>
-                Закрыть
-              </Button>
-            </div>
-          </div>
-
-          {/* Центр: видеосетка */}
-          <div className="call-main">
-            <CallGrid
-              localVideoRef={localVideoRef}
-              localStream={localStreamRef.current} // <<< добавь это
-              camEnabled={camEnabled}
-              micEnabled={micEnabled}
-              remoteStreams={remoteStreams}
-            />
-          </div>
-
-          {/* Плавающая панель управления — как в Zoom/Teams */}
-          <div className="call-toolbar">
-            {!inCall ? (
-              <Button
-                variant="contained"
-                startIcon={<VideoCallRoundedIcon />}
-                onClick={joinCall}
-              >
-                Присоединиться
-              </Button>
-            ) : (
-              <>
-                <Tooltip
-                  title={
-                    micEnabled ? "Выключить микрофон" : "Включить микрофон"
-                  }
-                >
-                  <IconButton
-                    onClick={toggleMic}
-                    color={micEnabled ? "primary" : "warning"}
-                  >
-                    {micEnabled ? <MicRoundedIcon /> : <MicOffRoundedIcon />}
-                  </IconButton>
-                </Tooltip>
-
-                <Tooltip
-                  title={camEnabled ? "Выключить камеру" : "Включить камеру"}
-                >
-                  <IconButton
-                    onClick={toggleCam}
-                    color={camEnabled ? "primary" : "warning"}
-                  >
-                    {camEnabled ? (
-                      <VideocamRoundedIcon />
-                    ) : (
-                      <VideocamOffRoundedIcon />
-                    )}
-                  </IconButton>
-                </Tooltip>
-
-                <Tooltip
-                  title={
-                    screenOn ? "Остановить показ экрана" : "Поделиться экраном"
-                  }
-                >
-                  <IconButton
-                    onClick={screenOn ? stopShareScreen : shareScreen}
-                    color={screenOn ? "warning" : "primary"}
-                  >
-                    {screenOn ? (
-                      <StopScreenShareRoundedIcon />
-                    ) : (
-                      <ScreenShareRoundedIcon />
-                    )}
-                  </IconButton>
-                </Tooltip>
-
-                <Tooltip title="Выйти из звонка">
-                  <IconButton onClick={leaveCall} color="error">
-                    <CallEndRoundedIcon />
-                  </IconButton>
-                </Tooltip>
-              </>
-            )}
-          </div>
-        </div>
+        <VideoCallSection
+          participantsCount={participantsCount}
+          setCallOpen={setCallOpen}
+          localVideoRef={localVideoRef}
+          localStream={localStreamRef.current}
+          camEnabled={camEnabled}
+          micEnabled={micEnabled}
+          remoteStreams={remoteStreams}
+          inCall={inCall}
+          joinCall={joinCall}
+          toggleMic={toggleMic}
+          toggleCam={toggleCam}
+          screenOn={screenOn}
+          shareScreen={shareScreen}
+          stopShareScreen={stopShareScreen}
+          leaveCall={leaveCall}
+        />
       )}
     </>
   ) : (
@@ -988,237 +911,5 @@ function Chat({ socket, messages, setMessages }) {
     </Box>
   );
 }
-
-// --- CallGrid.jsx (или прямо в вашем файле) ---
-// --- CallGrid (универсальная авто-сетка для mobile/desktop) ---
-function CallGrid({ localVideoRef, localStream, remoteStreams }) {
-  const containerRef = React.useRef(null);
-  const total = 1 + remoteStreams.length;
-
-  // аудио-метры (подсветка говорящего)
-  const [levels, setLevels] = React.useState({ self: 0 });
-  const acRef = React.useRef(null);
-  const metersRef = React.useRef(new Map());
-  const rafRef = React.useRef(null);
-
-  // раскладка
-  const [layout, setLayout] = React.useState({
-    cols: 1,
-    rows: 1,
-    w: 320,
-    h: 180,
-  });
-  const ASPECT = 16 / 9;
-
-  const tiles = React.useMemo(() => {
-    const list = [{ id: "self", kind: "self", stream: localStream }];
-    for (const r of remoteStreams)
-      list.push({ id: r.peerId, kind: "remote", stream: r.stream });
-    return list;
-  }, [localStream, remoteStreams]);
-
-  // макс. колонок по ширине вьюпорта (чтобы на мобиле не терять gap)
-  // было:
-  const maxColsForWidth = React.useCallback((W) => {
-    if (W <= 340) return 1; // очень узкие экраны
-    if (W <= 520) return 2; // типичный телефон — 2 колонки для 3+ участников
-    if (W <= 900) return 3;
-    return 4;
-  }, []);
-
-  // подбор наилучших размеров плитки так, чтобы ВСЁ влезало без скролла
-  const computeBest = React.useCallback(
-    (n, W, H) => {
-      // ⬇️ если на телефоне 1–2 участника — форсим одну колонку (красиво стеком)
-      const preferOneColOnPhone = n <= 2 && W <= 520;
-
-      // gap на телефоне чуть больше заметен
-      const GAP = W <= 520 ? 10 : 12;
-
-      let best = { cols: 1, rows: 1, w: W, h: H },
-        bestArea = 0;
-      const maxCols = preferOneColOnPhone ? 1 : Math.min(n, maxColsForWidth(W));
-
-      for (let cols = 1; cols <= maxCols; cols++) {
-        const rows = Math.ceil(n / cols);
-
-        let w = Math.floor((W - GAP * (cols - 1)) / cols);
-        let h = Math.floor(w / (16 / 9));
-
-        // поджать по высоте, если не влезает
-        const totalH = rows * h + GAP * (rows - 1);
-        if (totalH > H) {
-          h = Math.floor((H - GAP * (rows - 1)) / rows);
-          w = Math.floor(h * (16 / 9));
-        }
-
-        // страховка от переполнения
-        const fitW = cols * w + GAP * (cols - 1);
-        const fitH = rows * h + GAP * (rows - 1);
-        const scale = Math.min(W / fitW, H / fitH, 1);
-        w = Math.floor(w * scale);
-        h = Math.floor(h * scale);
-
-        const area = w * h;
-        if (area > bestArea) {
-          bestArea = area;
-          best = { cols, rows, w, h };
-        }
-      }
-      return best;
-    },
-    [maxColsForWidth]
-  );
-
-  const recalc = React.useCallback(() => {
-    const r = containerRef.current?.getBoundingClientRect();
-    if (!r) return;
-    setLayout(
-      computeBest(total, Math.floor(r.width) - 2, Math.floor(r.height) - 2)
-    );
-  }, [computeBest, total]);
-
-  React.useEffect(() => {
-    recalc();
-    window.addEventListener("resize", recalc);
-    window.addEventListener("orientationchange", recalc);
-    return () => {
-      window.removeEventListener("resize", recalc);
-      window.removeEventListener("orientationchange", recalc);
-    };
-  }, [recalc]);
-
-  // аудио-метры (подсветка)
-  const attachMeter = React.useCallback((id, stream) => {
-    if (!stream) return;
-    try {
-      if (!acRef.current) {
-        const Ctx = window.AudioContext || window.webkitAudioContext;
-        acRef.current = new Ctx();
-      }
-      acRef.current.resume?.();
-      if (metersRef.current.has(id)) return;
-
-      const src = acRef.current.createMediaStreamSource(stream);
-      const analyser = acRef.current.createAnalyser();
-      analyser.fftSize = 512;
-      src.connect(analyser);
-      const data = new Uint8Array(analyser.frequencyBinCount);
-      metersRef.current.set(id, { analyser, data });
-    } catch {}
-  }, []);
-
-  React.useEffect(() => {
-    // следим за актуальными сайтами
-    const ids = new Set(tiles.map((t) => t.id));
-    // добавить
-    tiles.forEach((t) => attachMeter(t.id, t.stream));
-    // убрать лишние
-    for (const id of Array.from(metersRef.current.keys())) {
-      if (!ids.has(id)) metersRef.current.delete(id);
-    }
-
-    const tick = () => {
-      const next = {};
-      metersRef.current.forEach(({ analyser, data }, id) => {
-        analyser.getByteTimeDomainData(data);
-        let sum = 0;
-        for (let i = 0; i < data.length; i++) {
-          const v = (data[i] - 128) / 128;
-          sum += v * v;
-        }
-        const rms = Math.sqrt(sum / data.length);
-        next[id] = Math.min(1, (levels[id] ?? 0) * 0.7 + rms * 0.3);
-      });
-      setLevels((prev) => ({ ...prev, ...next }));
-      rafRef.current = requestAnimationFrame(tick);
-    };
-    rafRef.current = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(rafRef.current);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tiles]);
-
-  return (
-    <div
-      ref={containerRef}
-      className="call-grid"
-      style={{
-        "--cols": layout.cols,
-        "--tile-w": `${layout.w}px`,
-        "--tile-h": `${layout.h}px`,
-      }}
-    >
-      {tiles.map((t) => (
-        <Tile
-          key={t.id}
-          id={t.id}
-          kind={t.kind}
-          stream={t.stream}
-          videoRef={t.kind === "self" ? localVideoRef : undefined}
-          self={t.kind === "self"}
-          speaking={(levels[t.id] ?? 0) > 0.08}
-        />
-      ))}
-    </div>
-  );
-}
-
-// --- единая плитка
-function Tile({ id, kind, stream, videoRef, speaking, self }) {
-  const ref = videoRef || React.useRef(null);
-
-  React.useEffect(() => {
-    if (!ref.current || !stream) return;
-    ref.current.srcObject = stream;
-    ref.current.muted = kind === "self";
-    ref.current.playsInline = true;
-    ref.current.play?.().catch(() => {});
-  }, [stream, kind, ref]);
-
-  return (
-    <div
-      className={["tile", self && "tile--self", speaking && "tile--speaking"]
-        .filter(Boolean)
-        .join(" ")}
-    >
-      <video ref={ref} className="tile__video" autoPlay playsInline />
-      <div className="tile__badges">
-        <span className="pill">{self ? "Вы" : id.slice(0, 5)}</span>
-      </div>
-    </div>
-  );
-}
-
-// function RemoteVideo({ peerId, stream, className = "" }) {
-//   const ref = useRef(null);
-//   const [needsTap, setNeedsTap] = useState(false);
-
-//   useEffect(() => {
-//     const el = ref.current;
-//     if (!el) return;
-//     el.srcObject = stream;
-//     el.muted = false;
-//     el.volume = 1;
-//     el.playsInline = true;
-//     el.play()
-//       .then(() => setNeedsTap(false))
-//       .catch(() => setNeedsTap(true));
-//   }, [stream]);
-
-//   return (
-//     <div
-//       className={`tile ${className}`}
-//       onClick={() => ref.current?.play?.().catch(() => {})}
-//     >
-//       <video ref={ref} autoPlay playsInline className="tile__video" />
-//       <div className="tile__badges">
-//         <Chip size="small" label={peerId.slice(0, 5)} />
-//         {needsTap && (
-//           <Chip size="small" color="warning" label="Нажмите для звука" />
-//         )}
-//       </div>
-//     </div>
-//   );
-// }
 
 export default Chat;
