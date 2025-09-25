@@ -148,8 +148,17 @@ export default function CallGrid({
     "--tile-h": `${layout.h}px`,
   };
 
+  // классы-модификаторы для мобильной сетки
+  const count = tiles.length;
+  const gridMod =
+    count === 1
+      ? "call-grid--solo"
+      : count === 2
+      ? "call-grid--two"
+      : "call-grid--many";
+
   return (
-    <div ref={containerRef} className="call-grid" style={cssVars}>
+    <div ref={containerRef} className={`call-grid ${gridMod}`} style={cssVars}>
       {tiles.map((t) => (
         <Tile
           key={t.id}

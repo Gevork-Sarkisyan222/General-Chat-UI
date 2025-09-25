@@ -9,6 +9,7 @@ import StopScreenShareRoundedIcon from "@mui/icons-material/StopScreenShareRound
 import CallEndRoundedIcon from "@mui/icons-material/CallEndRounded";
 import CallGrid from "./CallGrid.jsx";
 import "./videocall.scss";
+import { useSelector } from "react-redux";
 
 const VideoCallSection = ({
   participantsCount,
@@ -27,8 +28,10 @@ const VideoCallSection = ({
   stopShareScreen,
   leaveCall,
 }) => {
+  const { background } = useSelector((state) => state.background);
+
   return (
-    <div className="call-surface">
+    <div style={{ backgroundImage: background }} className="call-surface">
       <div className="call-topbar">
         <div className="call-topbar__left">
           <strong>Звонок</strong>

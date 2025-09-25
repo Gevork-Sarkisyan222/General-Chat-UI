@@ -1,13 +1,14 @@
+/* ====== Поверхность звонка ====== */
 .call-surface {
   position: fixed;
   inset: 0;
   z-index: 1200;
-  background: #fff;
+  //   background: #fff;
   display: grid;
-  grid-template-rows: auto 1fr; /* topbar + main; панель снизу плавающая */
+  grid-template-rows: auto 1fr; /* topbar + main */
 }
 
-/* Верхняя узкая панель */
+/* Верхняя панель */
 .call-topbar {
   height: 52px;
   display: flex;
@@ -23,16 +24,16 @@
   align-items: center;
 }
 
-/* Область для сетки — без скролла, контент всегда вписывается */
+/* Центр (область сетки) */
 .call-main {
   position: relative;
   min-height: 0;
-  overflow: hidden; /* никакого скролла при 2/3/5 участниках */
+  overflow: hidden; /* сетка сама вписывается */
   padding: clamp(8px, 1.5vw, 16px);
   background: #fff;
 }
 
-/* ===== Сетка тайлов ===== */
+/* ===== Сетка тайлов (десктоп) ===== */
 .call-grid {
   position: absolute;
   inset: clamp(8px, 1.5vw, 16px);
@@ -40,15 +41,10 @@
   grid-template-columns: repeat(var(--cols, 1), var(--tile-w, 320px));
   grid-auto-rows: var(--tile-h, 180px);
   gap: clamp(8px, 1vw, 12px);
-  place-content: center; /* центрируем сетку в доступной области */
-}
-
-/* Один участник — крупнее */
-.call-grid--solo {
   place-content: center;
 }
 
-/* ===== Плитка и видео ===== */
+/* Плитка */
 .tile {
   position: relative;
   width: var(--tile-w, 320px);
@@ -58,17 +54,13 @@
   overflow: hidden;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
 }
-
-/* Видео без чёрных полос */
 .tile__video {
   width: 100%;
   height: 100%;
-  object-fit: cover; /* <- убрали черные рамки (cover вместо contain) */
+  object-fit: cover;
   background: #000;
   display: block;
 }
-
-/* Бейджи в углу */
 .tile__badges {
   position: absolute;
   left: 8px;
@@ -77,7 +69,7 @@
   gap: 6px;
 }
 
-/* ===== Плавающая панель управления (как в Zoom/Teams) ===== */
+/* ===== Плавающая панель ===== */
 .call-toolbar {
   position: fixed;
   left: 50%;
@@ -86,7 +78,6 @@
   display: flex;
   align-items: center;
   gap: 10px;
-
   padding: 8px 10px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.92);
@@ -95,15 +86,8 @@
   box-shadow: 0 10px 30px rgba(17, 24, 39, 0.12);
 }
 
-@media (max-width: 640px) {
-  .call-toolbar {
-    gap: 6px;
-    padding: 6px 8px;
-  }
-}
-
+/* ===== Адаптив ===== */
 @media (max-width: 900px) {
-  /* общий инсет поменьше, чтобы влезало без скролла */
   .call-main {
     padding: 8px;
   }
@@ -113,107 +97,48 @@
   }
 }
 
-@media (max-width: 680px) {
-  /* 2 участника — вертикальный стек 16:9 (как было) */
-  .call-grid--m2 {
-    position: absolute;
-    inset: 8px;
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 8px;
-    place-content: center;
-  }
-  .call-grid--m2 .tile {
-    width: 100%;
-    height: auto;
-    aspect-ratio: 16 / 9;
-    border-radius: 10px;
-  }
-
-  /* 3 участника — stage + два превью (как было) */
-  .call-grid--m3 {
-    position: absolute;
-    inset: 8px;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    place-content: center;
-  }
-  .call-grid--m3 .tile {
-    width: 100%;
-    height: auto;
-    aspect-ratio: 16 / 9;
-    border-radius: 10px;
-  }
-  .call-grid--m3 .tile--stage {
-    grid-column: 1 / -1; /* верхняя плитка на всю ширину */
-  }
-
-  /* НОВОЕ: 4+ участников — компактная 2-колоночная сетка */
-  .call-grid--mc {
-    position: absolute;
-    inset: 8px;
-    display: grid;
-    grid-template-columns: 1fr 1fr; /* 2 колонки */
-    gap: 8px;
-    place-content: center;
-  }
-  .call-grid--mc .tile {
-    width: 100%;
-    height: auto;
-    aspect-ratio: 16 / 9; /* всегда 16:9 без чёрных полос */
-    border-radius: 10px;
-  }
-
-  /* чтобы панель не перекрывала плитки */
-  .call-toolbar {
-    bottom: max(10px, env(safe-area-inset-bottom));
-    padding: 6px 8px;
-    gap: 6px;
-  }
-}
-
-@media (max-width: 520px) {
-  .call-grid {
-    gap: 10px;
-  } // совпадает с GAP из JS
-}
-
+/* Мобильная логика: модификаторы по кол-ву участников */
 @media (max-width: 810px) {
-  /* MOBILE GRID — override everything */
   .call-grid {
     position: absolute !important;
     inset: 8px !important;
     display: grid !important;
-    /* умная авто-сетка: 1–2 тайла крупно, 3+ — две колонки */
-    grid-template-columns: repeat(
-      auto-fit,
-      minmax(min(320px, 48vw), 1fr)
-    ) !important;
-    grid-auto-rows: 1fr !important;
+    grid-auto-rows: auto !important; /* не фиксируем высоту строки */
     gap: 10px !important;
-    place-content: center !important;
+    place-content: start !important;
     align-content: start !important;
-    padding-bottom: max(
-      68px,
-      env(safe-area-inset-bottom)
-    ) !important; /* под тулбар */
+    justify-items: stretch !important;
+    align-items: stretch !important;
+    padding-bottom: max(68px, env(safe-area-inset-bottom)) !important;
+
+    /* базовое соотношение сторон для мобилы — ЧУТЬ ВЫШЕ */
+    --tile-ar: 4/3; /* было 16/9 -> стало выше */
   }
 
-  /* 1 тайл — на всю ширину */
-  .call-grid:has(> .tile:only-child) {
+  /* 1–2 участника — «крупный» режим (во всю ширину) */
+  .call-grid--solo,
+  .call-grid--two {
     grid-template-columns: 1fr !important;
+    --tile-ar: 16/9; /* крупный участник как киноширокий */
   }
 
-  /* 3+ тайлов — принудительно 2 колонки */
-  .call-grid:has(> .tile:nth-child(3)) {
-    grid-template-columns: repeat(2, 1fr) !important;
+  /* 3+ участников — две колонки, более высокие карточки */
+  .call-grid--many {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    grid-auto-flow: dense !important;
+    --tile-ar: 4/3; /* сделать заметно выше */
+  }
+
+  /* нечётное количество — последняя во всю ширину (и выше) */
+  .call-grid--many > .tile:last-child:nth-child(odd) {
+    grid-column: 1 / -1 !important;
+    --tile-ar: 16/9; /* широкая «стейдж» плитка */
   }
 
   .call-grid .tile {
     width: 100% !important;
-    height: auto !important;
-    aspect-ratio: 16 / 9 !important;
+    height: auto !important; /* высота из aspect-ratio */
+    aspect-ratio: var(--tile-ar, 16/9) !important;
     border-radius: 12px !important;
     overflow: hidden !important;
     background: #000 !important;
@@ -228,26 +153,22 @@
     display: block !important;
   }
 
-  .call-grid .tile__badges {
-    position: absolute !important;
-    left: 8px !important;
-    bottom: 8px !important;
-    display: flex !important;
-    gap: 6px !important;
+  /* в ландшафте вернём 16:9, чтобы не были слишком высокие */
+  @media (orientation: landscape) {
+    .call-grid {
+      --tile-ar: 16/9;
+    }
   }
 
-  /* подсветка говорящего — мягкая */
-  .call-grid .tile--speaking.tile--self {
-    box-shadow: 0 0 0 2px #3b82f6, 0 0 0 6px rgba(59, 130, 246, 0.18) !important;
-    border-color: #3b82f6 !important;
-  }
-  .call-grid .tile--speaking:not(.tile--self) {
-    box-shadow: 0 0 0 2px #22c55e, 0 0 0 6px rgba(34, 197, 94, 0.16) !important;
-    border-color: #22c55e !important;
-  }
-
-  /* чтобы панель управления не перекрывала сетку */
   .call-toolbar {
     bottom: max(12px, env(safe-area-inset-bottom)) !important;
+    gap: 8px !important;
+    padding: 8px 10px !important;
+  }
+}
+
+@media (max-width: 520px) {
+  .call-grid {
+    gap: 8px !important;
   }
 }
