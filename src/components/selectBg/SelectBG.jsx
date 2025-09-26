@@ -13,80 +13,148 @@ const BACKGROUNDS = [
       "url('https://htmlcolorcodes.com/assets/images/colors/off-white-color-solid-background-1920x1080.png')",
   },
   {
+    id: "01",
+    label: "askert фон",
+    preview:
+      "https://abrakadabra.fun/uploads/posts/2022-02/1643695417_1-abrakadabra-fun-p-krutie-oboi-dlya-chata-1.jpg",
+    bgValue:
+      "url('https://abrakadabra.fun/uploads/posts/2022-02/1643695417_1-abrakadabra-fun-p-krutie-oboi-dlya-chata-1.jpg')",
+  },
+  {
     id: "1",
     label: "Горы на рассвете",
     preview:
-      "https://i0.wp.com/lizzydavis.com/wp-content/uploads/2022/03/DSC_5981.jpg?resize=1024%2C618&ssl=1",
+      "https://kartinki.pics/uploads/posts/2021-04/1617278823_38-p-fon-dlya-chata-42.jpg",
     bgValue:
-      "url('https://i0.wp.com/lizzydavis.com/wp-content/uploads/2022/03/DSC_5981.jpg?resize=1024%2C618&ssl=1')",
+      "url('https://kartinki.pics/uploads/posts/2021-04/1617278823_38-p-fon-dlya-chata-42.jpg')",
   },
   {
     id: "2",
     label: "Абстрактный рассвет",
     preview:
-      "https://png.pngtree.com/background/20230425/original/pngtree-abstract-image-taken-from-afar-as-the-sun-rises-over-the-picture-image_2476371.jpg",
+      "https://img.freepik.com/free-vector/vector-social-contact-seamless-pattern-white-blue_1284-41919.jpg?semt=ais_hybrid&w=740&q=80",
     bgValue:
-      "url('https://png.pngtree.com/background/20230425/original/pngtree-abstract-image-taken-from-afar-as-the-sun-rises-over-the-picture-image_2476371.jpg')",
+      "url('https://img.freepik.com/free-vector/vector-social-contact-seamless-pattern-white-blue_1284-41919.jpg?semt=ais_hybrid&w=740&q=80')",
   },
   {
     id: "3",
     label: "Небо и облака",
     preview:
-      "https://images.pexels.com/photos/15837438/pexels-photo-15837438/free-photo-of-naturaleza-nubes-tiempo-cielo-azul.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+      "https://abrakadabra.fun/uploads/posts/2022-01/1641219128_1-abrakadabra-fun-p-oboi-dlya-chata-v-tg-1.jpg",
     bgValue:
-      "url('https://images.pexels.com/photos/15837438/pexels-photo-15837438/free-photo-of-naturaleza-nubes-tiempo-кйелло-azul.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1')",
+      "url('https://abrakadabra.fun/uploads/posts/2022-01/1641219128_1-abrakadabra-fun-p-oboi-dlya-chata-v-tg-1.jpg')",
   },
   {
     id: "4",
     label: "Пиксель-закат",
-    preview:
-      "https://unity3dschool.com/wp-content/uploads/2018/11/zakat-sunrise-1024x576.png",
-    bgValue:
-      "url('https://unity3dschool.com/wp-content/uploads/2018/11/zakat-sunrise-1024x576.png')",
+    preview: "https://whatsapped.ru/assets/galleries/8043/priroda02.jpg",
+    bgValue: "url('https://whatsapped.ru/assets/galleries/8043/priroda02.jpg')",
   },
   {
     id: "5",
     label: "Космос",
-    preview: "https://99px.ru/sstorage/53/2012/08/tmb_47560_3790.jpg",
-    bgValue: "url('https://99px.ru/sstorage/53/2012/08/tmb_47560_3790.jpg')",
+    preview:
+      "https://pibig.info/uploads/posts/2022-11/1669660756_8-pibig-info-p-fon-dlya-chata-instagram-8.jpg",
+    bgValue:
+      "url('https://pibig.info/uploads/posts/2022-11/1669660756_8-pibig-info-p-fon-dlya-chata-instagram-8.jpg')",
   },
   {
     id: "6",
     label: "Лес мечты",
+    preview:
+      "https://masterpiecer-images.s3.yandex.net/c116883a59f811ee927d363fac71b015:upscaled",
+    bgValue:
+      "url('https://masterpiecer-images.s3.yandex.net/c116883a59f811ee927d363fac71b015:upscaled')",
+  },
+  {
+    id: "7",
+    label: "Волны океана",
+    preview:
+      "https://kartin.papik.pro/uploads/posts/2023-06/1686671288_kartin-papik-pro-p-kartinki-krasivie-na-avu-vatsap-priroda-2.jpg",
+    bgValue:
+      "url('https://kartin.papik.pro/uploads/posts/2023-06/1686671288_kartin-papik-pro-p-kartinki-krasivie-na-avu-vatsap-priroda-2.jpg')",
+  },
+  {
+    id: "8",
+    label: "Глубокий космос",
+    preview:
+      "https://zefirka.club/uploads/posts/2022-10/1666204637_1-zefirka-club-p-zastavka-v-vatsap-na-avatarku-dlya-devushe-1.jpg",
+    bgValue:
+      "url('https://zefirka.club/uploads/posts/2022-10/1666204637_1-zefirka-club-p-zastavka-v-vatsap-na-avatarku-dlya-devushe-1.jpg')",
+  },
+  {
+    id: "9",
+    label: "Неон-абстракция",
+    preview:
+      "https://kartinki.pics/uploads/posts/2021-07/thumbs/1626160627_2-kartinkin-com-p-fon-dlya-chata-telegramm-krasivo-2.jpg",
+    bgValue:
+      "url('https://kartinki.pics/uploads/posts/2021-07/thumbs/1626160627_2-kartinkin-com-p-fon-dlya-chata-telegramm-krasivo-2.jpg')",
+  },
+  {
+    id: "10",
+    label: "Яндекс-пейзаж",
+    preview:
+      "https://kartinki.pics/uploads/posts/2021-07/thumbs/1626160694_51-kartinkin-com-p-fon-dlya-chata-telegramm-krasivo-51.jpg",
+    bgValue:
+      "url('https://kartinki.pics/uploads/posts/2021-07/thumbs/1626160694_51-kartinkin-com-p-fon-dlya-chata-telegramm-krasivo-51.jpg')",
+  },
+
+  // новые элементы, чтобы задействовать все оставшиеся ссылки
+  {
+    id: "11",
+    label: "Задний фон для чата",
+    preview:
+      "https://abrakadabra.fun/uploads/posts/2022-02/1645565234_2-abrakadabra-fun-p-zadnii-fon-dlya-chata-2.jpg",
+    bgValue:
+      "url('https://abrakadabra.fun/uploads/posts/2022-02/1645565234_2-abrakadabra-fun-p-zadnii-fon-dlya-chata-2.jpg')",
+  },
+  {
+    id: "12",
+    label: "Лес мечты (2)",
     preview:
       "https://img.lovepik.com/background/20211022/large/lovepik-dream-forest-background-image_401746907.jpg",
     bgValue:
       "url('https://img.lovepik.com/background/20211022/large/lovepik-dream-forest-background-image_401746907.jpg')",
   },
   {
-    id: "7",
-    label: "Волны океана",
-    preview: "https://www.ssikombucha.com/images/slide-1.jpg",
-    bgValue: "url('https://www.ssikombucha.com/images/slide-1.jpg')",
-  },
-  {
-    id: "8",
-    label: "Глубокий космос",
+    id: "13",
+    label: "Любовный фон",
     preview:
-      "https://st2.depositphotos.com/3442145/7306/i/950/depositphotos_73064499-stock-photo-deep-space-website-banner-background.jpg",
+      "https://sneg.top/uploads/posts/2023-03/1679132623_sneg-top-p-fon-dlya-chata-lyubov-vkontakte-4.png",
     bgValue:
-      "url('https://st2.depositphotos.com/3442145/7306/i/950/depositphotos_73064499-stock-photo-deep-space-website-banner-background.jpg')",
+      "url('https://sneg.top/uploads/posts/2023-03/1679132623_sneg-top-p-fon-dlya-chata-lyubov-vkontakte-4.png')",
   },
   {
-    id: "9",
-    label: "Неон-абстракция",
+    id: "14",
+    label: "Персиковые сердца",
     preview:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQnMyBToUMYYsehrsOwBzh-P87GrBMG1pnyWhqIWev1r6E_I0s8nqGisFACSyk6Ga-uUJ0&usqp=CAU",
+      "https://png.pngtree.com/background/20221228/original/pngtree-love-chat-background-wallpaper-elements-pink-peach-heart-romantic-hand-painted-picture-image_1993082.jpg",
     bgValue:
-      "url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQnMyBToUMYYsehrsOwBzh-P87GrBMG1pnyWhqIWev1r6E_I0s8nqGisFACSyk6Ga-uUJ0&usqp=CAU')",
+      "url('https://png.pngtree.com/background/20221228/original/pngtree-love-chat-background-wallpaper-elements-pink-peach-heart-romantic-hand-painted-picture-image_1993082.jpg')",
   },
   {
-    id: "10",
-    label: "Яндекс-пейзаж",
+    id: "15",
+    label: "Subaru Impreza",
+    preview:
+      "https://sotni.ru/wp-content/uploads/2023/08/subaru-impreza-1-1.webp",
+    bgValue:
+      "url('https://sotni.ru/wp-content/uploads/2023/08/subaru-impreza-1-1.webp')",
+  },
+  {
+    id: "16",
+    label: "Яндекс-пейзаж (оригинал)",
     preview:
       "https://img-fotki.yandex.ru/get/4116/41972460.4b/0_9374a_8261953c_orig",
     bgValue:
       "url('https://img-fotki.yandex.ru/get/4116/41972460.4b/0_9374a_8261953c_orig')",
+  },
+  {
+    id: "17",
+    label: "Вода и текст",
+    preview:
+      "https://kartinki.pics/uploads/posts/2021-07/1627085167_35-kartinkin-com-p-fon-dlya-teksta-voda-krasivo-35.jpg",
+    bgValue:
+      "url('https://kartinki.pics/uploads/posts/2021-07/1627085167_35-kartinkin-com-p-fon-dlya-teksta-voda-krasivo-35.jpg')",
   },
 ];
 
