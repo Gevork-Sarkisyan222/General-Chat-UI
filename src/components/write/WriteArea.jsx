@@ -546,6 +546,7 @@ function WriteArea({
             display: "flex",
             flexDirection: "column",
             gap: 1,
+            marginInline: "12px",
           }}
         >
           <ModalClose />

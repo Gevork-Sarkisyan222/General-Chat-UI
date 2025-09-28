@@ -18,6 +18,8 @@ import OtherProfile from ".././Profile/OtherProfile";
 import Badge from "@mui/material/Badge";
 import { styled } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
+import { IconButton } from "@mui/material";
+import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 
 const StyledBadge = styled(Badge)(({ theme }) => ({
   "& .MuiBadge-badge": {
@@ -184,28 +186,83 @@ function ChatSection({
 
   return (
     <>
-      <ImageViewModal
-        open={imageView}
-        onClose={handleCloseImageView}
-        aria-labelledby="modal-modal-title"
-        aria-describedby="modal-modal-description"
-      >
-        <Box sx={imageViewStyle}>
-          <div className="modal-image" style={{ textAlign: "center" }}>
+      <ImageViewModal open={imageView} onClose={handleCloseImageView}>
+        <div
+          role="dialog"
+          aria-modal="true"
+          onClick={handleCloseImageView}
+          style={{
+            position: "fixed",
+            inset: 0,
+            display: "grid",
+            placeItems: "center",
+            backgroundColor: "rgba(0,0,0,0.5)",
+            backdropFilter: "blur(2px)",
+            /* воздух по краям + вырезы */
+            "--pad": "clamp(8px, 3vw, 24px)",
+            paddingTop: "calc(env(safe-area-inset-top) + var(--pad))",
+            paddingRight: "calc(env(safe-area-inset-right) + var(--pad))",
+            paddingBottom: "calc(env(safe-area-inset-bottom) + var(--pad))",
+            paddingLeft: "calc(env(safe-area-inset-left) + var(--pad))",
+            boxSizing: "border-box",
+            overflow: "hidden",
+            zIndex: 1300,
+          }}
+        >
+          {/* Якорь равен РЕАЛЬНОМУ размеру картинки */}
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              position: "relative",
+              display: "inline-block",
+              lineHeight: 0,
+              /* не шире/выше доступного окна */
+              maxWidth:
+                "calc(100vw - (2 * var(--pad)) - env(safe-area-inset-left) - env(safe-area-inset-right))",
+              maxHeight:
+                "calc(100dvh - (2 * var(--pad)) - env(safe-area-inset-top) - env(safe-area-inset-bottom))",
+            }}
+          >
+            {/* Крестик — ВНУТРИ картинки, всегда виден */}
+            <IconButton
+              aria-label="Закрыть изображение"
+              onClick={handleCloseImageView}
+              sx={{
+                position: "absolute",
+                top: 8,
+                right: 8,
+                bgcolor: "rgba(0,0,0,0.5)",
+                color: "#fff",
+                "&:hover": { bgcolor: "rgba(0,0,0,0.65)" },
+                width: { xs: 36, sm: 40 },
+                height: { xs: 36, sm: 40 },
+                zIndex: 1,
+              }}
+            >
+              <CloseRoundedIcon />
+            </IconButton>
+
+            {/* Картинка: вписать С ЦЕЛОСТНОСТЬЮ */}
             <img
               src={imageUrlView}
               alt="view image"
+              draggable={false}
               style={{
-                maxWidth: smallDevice ? "90vw" : "80vw", // ограничение по ширине экрана
-                maxHeight: "80vh", // ограничение по высоте экрана
-                height: "auto", // сохраняет пропорции
+                display: "block",
+                /* магия полного вписывания для любых пропорций */
+                maxWidth:
+                  "calc(100vw - (2 * var(--pad)) - env(safe-area-inset-left) - env(safe-area-inset-right))",
+                maxHeight:
+                  "calc(100dvh - (2 * var(--pad)) - env(safe-area-inset-top) - env(safe-area-inset-bottom))",
                 width: "auto",
-                borderRadius: "8px", // красиво скруглить углы
-                objectFit: "contain", // вписывает в рамки, без обрезки
+                height: "auto",
+                objectFit: "contain",
+                userSelect: "none",
+                touchAction: "pan-y pinch-zoom",
               }}
             />
           </div>
-        </Box>
+        </div>
       </ImageViewModal>
 
       <ProfileModalJoy

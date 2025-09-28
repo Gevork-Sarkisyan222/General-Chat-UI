@@ -29,21 +29,53 @@ const VideoCallSection = ({
   leaveCall,
 }) => {
   const { background } = useSelector((state) => state.background);
+  const { mobileBackBG } = useSelector((state) => state);
+
+  const BLUE = "25, 118, 210"; // MUI blue[500] как база
 
   return (
-    <div style={{ backgroundImage: background }} className="call-surface">
-      <div className="call-topbar">
+    <div
+      style={{
+        backgroundImage:
+          !background ||
+          background.includes(
+            "https://htmlcolorcodes.com/assets/images/colors/off-white-color-solid-background-1920x1080.png"
+          )
+            ? 'url("https://cdn.wallpapersafari.com/73/33/P9b2gR.jpg")'
+            : background,
+        backgroundSize: "100%",
+        backgroundAttachment: "fixed",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+      }}
+      className="call-surface"
+    >
+      <div
+        style={{
+          background: "rgba(25, 118, 210, 0.06)",
+          backdropFilter: "blur(6px)",
+        }}
+        className="call-topbar"
+      >
         <div className="call-topbar__left">
-          <strong>Звонок</strong>
+          <strong style={{ color: "white" }}>Звонок</strong>
           <Chip
             size="small"
-            sx={{ ml: 1 }}
+            sx={{ ml: 1, color: "black", background: "white" }}
             label={`${participantsCount} участник(а)`}
           />
         </div>
         <div className="call-topbar__right">
-          <Button variant="text" onClick={() => setCallOpen(false)}>
-            Закрыть
+          <Button
+            sx={
+              {
+                // ":hover": { background: "transparent", color: "grey" },
+              }
+            }
+            variant="text"
+            onClick={() => setCallOpen(false)}
+          >
+            Выйти
           </Button>
         </div>
       </div>
@@ -58,34 +90,96 @@ const VideoCallSection = ({
         />
       </div>
 
-      <div className="call-toolbar">
+      <div
+        className="call-toolbar"
+        style={{
+          position: "fixed",
+          left: "50%",
+          bottom: "max(16px, env(safe-area-inset-bottom))",
+          transform: "translateX(-50%)",
+          display: "flex",
+          alignItems: "center",
+          gap: "16px",
+          padding: "8px 10px",
+          borderRadius: 999,
+          background: `linear-gradient(180deg, rgba(${BLUE},0.08), rgba(${BLUE},0.06))`,
+          border: `1px solid rgba(${BLUE},0.22)`,
+          boxShadow:
+            "0 10px 30px rgba(17,24,39,0.12), inset 0 1px 0 rgba(255,255,255,0.25)",
+          backdropFilter: "blur(10px)",
+          WebkitBackdropFilter: "blur(10px)",
+        }}
+      >
         {!inCall ? (
           <Button
-            variant="contained"
-            startIcon={<VideoCallRoundedIcon />}
             onClick={joinCall}
+            startIcon={<VideoCallRoundedIcon />}
+            variant="contained"
+            sx={{
+              textTransform: "none",
+              fontWeight: 600,
+              px: 2.2,
+              py: 1,
+              borderRadius: 999,
+              boxShadow: "0 8px 20px rgba(25,118,210,0.35)",
+              background: `linear-gradient(180deg, rgba(${BLUE},0.95), rgba(${BLUE},0.88))`,
+              "&:hover": {
+                background: `linear-gradient(180deg, rgba(${BLUE},1), rgba(${BLUE},0.95))`,
+                boxShadow: "0 10px 24px rgba(25,118,210,0.45)",
+              },
+            }}
           >
             Присоединиться
           </Button>
         ) : (
           <>
+            {/* Микрофон */}
             <Tooltip
               title={micEnabled ? "Выключить микрофон" : "Включить микрофон"}
             >
               <IconButton
                 onClick={toggleMic}
-                color={micEnabled ? "primary" : "warning"}
+                sx={{
+                  width: 40,
+                  height: 40,
+                  color: micEnabled
+                    ? `rgba(${BLUE},0.95)`
+                    : "rgba(234, 88, 12, 0.95)", // orange-600
+                  backgroundColor: micEnabled
+                    ? `rgba(${BLUE},0.10)`
+                    : "rgba(234, 88, 12, 0.10)",
+                  "&:hover": {
+                    backgroundColor: micEnabled
+                      ? `rgba(${BLUE},0.18)`
+                      : "rgba(234, 88, 12, 0.18)",
+                  },
+                }}
               >
                 {micEnabled ? <MicRoundedIcon /> : <MicOffRoundedIcon />}
               </IconButton>
             </Tooltip>
 
+            {/* Камера */}
             <Tooltip
               title={camEnabled ? "Выключить камеру" : "Включить камеру"}
             >
               <IconButton
                 onClick={toggleCam}
-                color={camEnabled ? "primary" : "warning"}
+                sx={{
+                  width: 40,
+                  height: 40,
+                  color: camEnabled
+                    ? `rgba(${BLUE},0.95)`
+                    : "rgba(234, 88, 12, 0.95)",
+                  backgroundColor: camEnabled
+                    ? `rgba(${BLUE},0.10)`
+                    : "rgba(234, 88, 12, 0.10)",
+                  "&:hover": {
+                    backgroundColor: camEnabled
+                      ? `rgba(${BLUE},0.18)`
+                      : "rgba(234, 88, 12, 0.18)",
+                  },
+                }}
               >
                 {camEnabled ? (
                   <VideocamRoundedIcon />
@@ -95,6 +189,7 @@ const VideoCallSection = ({
               </IconButton>
             </Tooltip>
 
+            {/* Шаринг экрана */}
             <Tooltip
               title={
                 screenOn ? "Остановить показ экрана" : "Поделиться экраном"
@@ -102,7 +197,21 @@ const VideoCallSection = ({
             >
               <IconButton
                 onClick={screenOn ? stopShareScreen : shareScreen}
-                color={screenOn ? "warning" : "primary"}
+                sx={{
+                  width: 40,
+                  height: 40,
+                  color: screenOn
+                    ? "rgba(234, 88, 12, 0.95)"
+                    : `rgba(${BLUE},0.95)`,
+                  backgroundColor: screenOn
+                    ? "rgba(234, 88, 12, 0.10)"
+                    : `rgba(${BLUE},0.10)`,
+                  "&:hover": {
+                    backgroundColor: screenOn
+                      ? "rgba(234, 88, 12, 0.18)"
+                      : `rgba(${BLUE},0.18)`,
+                  },
+                }}
               >
                 {screenOn ? (
                   <StopScreenShareRoundedIcon />
@@ -112,8 +221,23 @@ const VideoCallSection = ({
               </IconButton>
             </Tooltip>
 
+            {/* Завершить */}
             <Tooltip title="Выйти из звонка">
-              <IconButton onClick={leaveCall} color="error">
+              <IconButton
+                onClick={leaveCall}
+                sx={{
+                  width: 40,
+                  height: 40,
+                  color: "white",
+                  background:
+                    "linear-gradient(180deg, rgba(239,68,68,0.95), rgba(220,38,38,0.95))", // красный градиент
+                  boxShadow: "0 6px 16px rgba(220,38,38,0.35)",
+                  "&:hover": {
+                    background:
+                      "linear-gradient(180deg, rgba(239,68,68,1), rgba(220,38,38,1))",
+                  },
+                }}
+              >
                 <CallEndRoundedIcon />
               </IconButton>
             </Tooltip>

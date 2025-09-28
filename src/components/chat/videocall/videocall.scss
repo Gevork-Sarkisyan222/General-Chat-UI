@@ -16,8 +16,8 @@
   justify-content: space-between;
   padding: 8px 12px;
   border-bottom: 1px solid rgba(17, 24, 39, 0.08);
-  background: #fff;
 }
+
 .call-topbar__left,
 .call-topbar__right {
   display: flex;
@@ -30,7 +30,7 @@
   min-height: 0;
   overflow: hidden; /* сетка сама вписывается */
   padding: clamp(8px, 1.5vw, 16px);
-  background: #fff;
+  background: transparent;
 }
 
 /* ===== Сетка тайлов (десктоп) ===== */
@@ -77,10 +77,10 @@
   transform: translateX(-50%);
   display: flex;
   align-items: center;
-  gap: 10px;
   padding: 8px 10px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.92);
+  // background: rgba(255, 255, 255, 0.92);
+  // background: transparent;
   backdrop-filter: blur(8px);
   border: 1px solid rgba(17, 24, 39, 0.12);
   box-shadow: 0 10px 30px rgba(17, 24, 39, 0.12);
@@ -162,7 +162,6 @@
 
   .call-toolbar {
     bottom: max(12px, env(safe-area-inset-bottom)) !important;
-    gap: 8px !important;
     padding: 8px 10px !important;
   }
 }
