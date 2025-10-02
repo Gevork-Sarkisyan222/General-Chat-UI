@@ -33,20 +33,38 @@ const VideoCallSection = ({
 
   const BLUE = "25, 118, 210"; // MUI blue[500] как база
 
+  const normalizeBg = (bg) => {
+    if (!bg) return 'url("https://cdn.wallpapersafari.com/73/33/P9b2gR.jpg")';
+    const offWhite =
+      "https://htmlcolorcodes.com/assets/images/colors/off-white-color-solid-background-1920x1080.png";
+    if (typeof bg === "string" && bg.includes(offWhite)) {
+      return 'url("https://cdn.wallpapersafari.com/73/33/P9b2gR.jpg")';
+    }
+    // если пришла чистая ссылка без url(...)
+    if (
+      typeof bg === "string" &&
+      !bg.trim().startsWith("url(") &&
+      !bg.includes("gradient(")
+    ) {
+      return `url("${bg}")`;
+    }
+    return bg;
+  };
+
+  const isMobile =
+    typeof window !== "undefined" &&
+    window.matchMedia("(max-width: 768px)").matches;
+
   return (
     <div
       style={{
-        backgroundImage:
-          !background ||
-          background.includes(
-            "https://htmlcolorcodes.com/assets/images/colors/off-white-color-solid-background-1920x1080.png"
-          )
-            ? 'url("https://cdn.wallpapersafari.com/73/33/P9b2gR.jpg")'
-            : background,
-        backgroundSize: "100%",
-        backgroundAttachment: "fixed",
-        backgroundPosition: "center",
+        backgroundImage: normalizeBg(background),
+        backgroundSize: "cover", // <<< ключевое изменение
+        backgroundPosition: "center center",
         backgroundRepeat: "no-repeat",
+        backgroundAttachment: isMobile ? "scroll" : "fixed", // фикс убираем на мобиле
+        minHeight: "100dvh", // чтобы заполняло экран
+        width: "100%",
       }}
       className="call-surface"
     >

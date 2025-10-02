@@ -31,28 +31,31 @@ export default function DialogVerticalScroll({
     backgroundUrl6:
       "https://getwallpapers.com/wallpaper/full/0/a/4/1329865-free-desktop-wallpaper-night-sky-1920x1200.jpg",
     backgroundUrl7: "https://wallpapercave.com/wp/wp5122798.jpg",
-    backgroundUrl8:
-      "https://www.wallpapers13.com/wp-content/uploads/2016/01/Ocean-transparent-water-blue-sky-with-white-clouds-computer-HD-Wallpaper-for-Desktop-3840x2160-1680x1050.jpg",
-    backgroundUrl9:
-      "https://wallpapers.com/images/featured/nature-2ygv7ssy2k0lxlzu.jpg",
-    backgroundUrl10: "https://wallpapercave.com/wp/af8m9MM.jpg",
-    backgroundUrl11:
-      "https://wallpapercrafter.com/desktop2/707168-agua-azul-mar-naturaleza-1080P.jpg",
-    backgroundUrl12:
-      "https://www.pixelstalk.net/wp-content/uploads/images6/Awesome-Sky-Background.jpg",
     backgroundUrl13: "https://wallpaper.dog/large/297263.jpg",
-    backgroundUrl14:
-      "https://www.xtrafondos.com/en/descargar.php?id=56&resolucion=1920x1080",
     backgroundUrl15:
       "https://getwallpapers.com/wallpaper/full/3/e/9/772937-sunset-wallpaper-for-desktop-1920x1200-for-android-tablet.jpg",
     backgroundUrl16: "https://wallpapercave.com/wp/1riTASZ.jpg",
+    backgroundUrl9:
+      "https://wallpapers.com/images/featured/nature-2ygv7ssy2k0lxlzu.jpg",
+    backgroundUrl8:
+      "https://abrakadabra.fun/uploads/posts/2021-12/1639964550_1-abrakadabra-fun-p-standartnie-foni-telegramma-1.png",
+    backgroundUrl10:
+      "https://kartinki.pics/uploads/posts/2021-07/1626126151_29-kartinkin-com-p-fon-dlya-telegramma-krasivo-30.jpg",
+    backgroundUrl11:
+      "https://images.wallpaperscraft.ru/image/single/gradient_abstraktsiia_sinij_205793_1920x1080.jpg",
+    backgroundUrl12:
+      "https://marketplace.canva.com/EAGBzICL4nk/1/0/1600w/canva-pink-and-blue-cute-desktop-wallpaper-EQcU9lTQ_-Q.jpg",
+
+    backgroundUrl14:
+      "https://zastavki.gas-kvas.com/uploads/posts/2024-06/zastavki-gas-kvas-com-kqij-p-zastavki-v-chat-25.jpg",
+
     backgroundUrl17:
       "https://cutewallpaper.org/21/beach-pictures-wallpaper/Sunset-Beach-Wallpaper-Wallpaper-Stream.jpg",
     backgroundUrl17: "https://bgfons.com/uploads/sky/sky_texture1998.jpg",
     backgroundUrl18:
-      "https://img.freepik.com/premium-photo/best-forest-background-images_977375-21.jpg?w=2000",
+      "https://abrakadabra.fun/uploads/posts/2022-03/1647518106_12-abrakadabra-fun-p-telegram-oboi-dlya-pk-16.png",
     backgroundUrl19:
-      "https://previews.123rf.com/images/betelgejze/betelgejze1602/betelgejze160200029/52161364-%D0%B2%D0%B5%D0%BA%D1%82%D0%BE%D1%80-%D0%B3%D0%BE%D1%80%D0%B8%D0%B7%D0%BE%D0%BD%D1%82%D0%B0%D0%BB%D1%8C%D0%BD%D1%8B%D0%B5-%D0%B1%D0%B5%D1%81%D1%88%D0%BE%D0%B2%D0%BD%D0%BE%D0%B3%D0%BE-%D1%84%D0%BE%D0%BD%D0%B0-%D1%81-%D0%B7%D0%B5%D0%BB%D0%B5%D0%BD%D0%BE%D0%B9-%D1%81%D0%BE%D1%81%D0%BD%D1%8B-%D0%B8%D0%BB%D0%B8-%D0%BF%D0%B8%D1%85%D1%82%D1%8B-%D0%BB%D0%B5%D1%81%D0%B0-%D0%BF%D1%80%D0%B8%D1%80%D0%BE%D0%B4%D0%B0-%D1%84%D0%BE%D0%BD-%D1%81-%D0%B2%D0%B5%D1%87%D0%BD%D0%BE%D0%B7%D0%B5%D0%BB%D0%B5%D0%BD%D1%8B%D1%85.jpg",
+      "https://zefirka.club/uploads/posts/2022-09/1663555596_1-zefirka-club-p-oboi-dlya-chata-telegramm-1.jpg",
   };
 
   return (
