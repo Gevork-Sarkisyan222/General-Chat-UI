@@ -64,6 +64,7 @@ function Chat({ socket, messages, setMessages }) {
   const { pageBackground } = useSelector((state) => state.pageBackground);
   const smallDevice = useMediaQuery("(max-width:600px)");
   const scrollRef = useRef(null);
+  const makeMirrorBg = useSelector((state) => state.background.makeMirrorBg);
 
   // new States down
 
@@ -679,6 +680,15 @@ function Chat({ socket, messages, setMessages }) {
             backgroundImage:
               smallDevice && isAuthenticated ? mobileBackBG.mobileBackBG : "",
             color: mobileBackBG.mobileBackBG ? "white" : "black",
+            background: makeMirrorBg ? "transparent" : "#ffffff",
+            backdropFilter: makeMirrorBg ? "blur(5px) saturate(100%)" : "none",
+            WebkitBackdropFilter: makeMirrorBg
+              ? "blur(5px) saturate(100%)"
+              : "none",
+            border: makeMirrorBg
+              ? "1px solid rgba(255, 255, 255, 0.2)"
+              : "none",
+            borderRadius: "16px",
           }}
           className="Wrapper"
         >
@@ -755,7 +765,10 @@ function Chat({ socket, messages, setMessages }) {
           <div className="down-chat-section">
             <div
               ref={scrollRef}
-              style={{ backgroundImage: background }}
+              style={{
+                backgroundImage: makeMirrorBg ? "none" : background,
+                background: makeMirrorBg ? "transparent" : background,
+              }}
               className="chat-area"
             >
               {messages.length > 0 ? (

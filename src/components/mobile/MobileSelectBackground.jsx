@@ -1,6 +1,9 @@
 import React from "react";
 import { useDispatch } from "react-redux";
-import { setBackground } from "../../redux/slice/backgroundSlice";
+import {
+  setBackground,
+  setMakeMirrorBg,
+} from "../../redux/slice/backgroundSlice";
 
 import Button from "@mui/joy/Button";
 import List from "@mui/joy/List";
@@ -77,6 +80,7 @@ export default function DialogVerticalScroll({
   }, [mobileLayout]);
 
   const handleSelectMobile = (url) => {
+    dispatch(setMakeMirrorBg(false));
     const value = `url('${url}')`;
     dispatch(setBackground(value));
     localStorage.setItem("background", value);

@@ -150,3 +150,163 @@
     font-size: 11.5px;
   }
 }
+
+/* ==== MIRROR HERO (отдельный блок сверху) ==== */
+.mirrorHero {
+  /* блок сверху, на всю ширину, чуть крупнее и с отступом от хедера */
+  width: 50%;
+  // margin: auto;
+  margin-top: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  /* тонкая разделительная линия снизу по твоей системе цветов */
+  border-bottom: 1px solid var(--tag-theme-bg, rgba(17, 24, 39, 0.08));
+  padding-bottom: 16px;
+}
+
+/* ==== MIRROR CARD (другая карточка, не как .card) ==== */
+.mirrorCard {
+  position: relative;
+  width: clamp(280px, 52vw, 860px);
+  aspect-ratio: 21 / 9;
+  border: 0;
+  border-radius: 20px;
+  overflow: hidden;
+  cursor: pointer;
+
+  /* фон задаёшь inline через style (backgroundImage), остальное тут: */
+  background-size: cover;
+  background-position: center;
+
+  /* стеклянная рамка и тень */
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.24);
+  background-color: var(--block-bg-color, rgba(255, 255, 255, 0.06));
+  outline: 1px solid rgba(255, 255, 255, 0.15);
+  outline-offset: -1px;
+
+  transition: transform 0.25s ease, box-shadow 0.25s ease,
+    outline-color 0.25s ease;
+  -webkit-tap-highlight-color: transparent;
+
+  /* лёгкий 3D-эффект при наведении */
+  &:hover {
+    transform: translateY(-2px) scale(1.01);
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.28);
+    outline-color: rgba(255, 255, 255, 0.32);
+  }
+
+  &:focus-visible {
+    outline: 2px solid rgba(255, 255, 255, 0.65);
+    outline-offset: 2px;
+  }
+}
+
+/* верхний градиент + нижний затемнитель для читабельности */
+.mirrorOverlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0) 45%)
+      /* снизу */,
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0)); /* сверху */
+}
+
+/* стеклянная плашка с метаданными */
+.mirrorMeta {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+
+  padding: 12px 14px;
+  border-radius: 14px;
+
+  /* glassmorphism с учётом темы */
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  background: color-mix(
+    in srgb,
+    var(--block-bg-color, #0b0d12) 18%,
+    transparent
+  );
+  border: 1px solid color-mix(in srgb, #ffffff 24%, transparent);
+
+  color: var(--text-color, #fff);
+  font-weight: 650;
+  line-height: 1.1;
+}
+
+/* текст метки */
+.mirrorLabel {
+  max-width: 70%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: 0.2px;
+}
+
+/* кнопка-пилюля */
+.mirrorPill {
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  letter-spacing: 0.35px;
+
+  background: color-mix(in srgb, #000 40%, transparent);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+}
+
+/* анимированный "блик" при ховере */
+.mirrorCard::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    115deg,
+    transparent 20%,
+    rgba(255, 255, 255, 0.18) 40%,
+    transparent 60%
+  );
+  transform: translateX(-120%);
+  transition: transform 0.65s ease;
+}
+.mirrorCard:hover::after {
+  transform: translateX(10%);
+}
+
+/* ====== АДАПТИВ ====== */
+@media (max-width: 640px) {
+  .mirrorHero {
+    margin: 8px 0 14px 0;
+    padding-bottom: 12px;
+  }
+  .mirrorCard {
+    border-radius: 16px;
+  }
+  .mirrorMeta {
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+    padding: 10px 12px;
+    gap: 8px;
+  }
+  .mirrorLabel {
+    max-width: 64%;
+  }
+  .mirrorPill {
+    display: none; /* на мобилке скрываем пилюлю, оставляем только заголовок */
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+  .mirrorCard {
+    border-radius: 18px;
+  }
+}

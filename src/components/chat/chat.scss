@@ -59,6 +59,11 @@
   background-repeat: no-repeat;
   background-size: cover;
 
+  @media (max-width: 600px) {
+    border-radius: 0px !important;
+    margin-top: -1px !important;
+  }
+
   /* ===== header ===== */
   header {
     position: sticky;
@@ -117,9 +122,9 @@
     padding: clamp(12px, 2.4vw, 20px) clamp(10px, 2.4vw, 24px);
     padding-bottom: clamp(84px, 12vh, 120px); /* запас под write-area */
 
-    background-position: center;
-    background-repeat: no-repeat;
-    background-size: cover;
+    background-position: center !important;
+    background-repeat: no-repeat !important;
+    background-size: cover !important;
 
     overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;

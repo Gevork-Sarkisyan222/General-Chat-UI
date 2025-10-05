@@ -1,17 +1,18 @@
 import React from "react";
 import "./selectBG.scss";
 import { setBackground } from "../../redux/slice/backgroundSlice";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { setMakeMirrorBg } from "../../redux/slice/backgroundSlice";
 
 const BACKGROUNDS = [
-  {
-    id: "default",
-    label: "Default фон",
-    preview:
-      "https://htmlcolorcodes.com/assets/images/colors/off-white-color-solid-background-1920x1080.png",
-    bgValue:
-      "url('https://htmlcolorcodes.com/assets/images/colors/off-white-color-solid-background-1920x1080.png')",
-  },
+  // {
+  //   id: "default",
+  //   label: "Default фон",
+  //   preview:
+  //     "https://htmlcolorcodes.com/assets/images/colors/off-white-color-solid-background-1920x1080.png",
+  //   bgValue:
+  //     "url('https://htmlcolorcodes.com/assets/images/colors/off-white-color-solid-background-1920x1080.png')",
+  // },
   {
     id: "01",
     label: "askert фон",
@@ -160,15 +161,22 @@ const BACKGROUNDS = [
 
 function SelectBG({ onClose }) {
   const dispatch = useDispatch();
+  const makeMirrorBg = useSelector((state) => state.background.makeMirrorBg);
 
   const changeBackground = (bgValue) => {
-    onClose();
+    dispatch(setMakeMirrorBg(false));
     dispatch(setBackground(bgValue));
+    onClose();
   };
 
   const deleteBackground = () => {
     onClose();
     localStorage.removeItem("background");
+  };
+
+  const onMakeBgMirror = () => {
+    dispatch(setMakeMirrorBg(!makeMirrorBg));
+    onClose();
   };
 
   return (
@@ -179,6 +187,71 @@ function SelectBG({ onClose }) {
           ✕
         </button>
       </header>
+
+      <div className="mirrorHero" style={{ width: "100%" }}>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+            gap: "16px",
+            alignItems: "stretch",
+            width: "100%",
+            margin: "0 auto",
+          }}
+        >
+          {/* Кнопка 1 — «Стеклянный фон» */}
+          <button
+            onClick={onMakeBgMirror}
+            className="mirrorCard"
+            style={{
+              width: "100%",
+              aspectRatio: "21 / 9",
+              backgroundImage:
+                'url("https://static.vecteezy.com/system/resources/thumbnails/035/503/910/small_2x/mirror-texture-background-silver-metal-foil-aluminium-chrome-gloss-backdrop-with-reflection-abstract-gradient-illustration-vector.jpg")',
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+            }}
+            aria-label="Выбрать фон: Стеклянный фон"
+          >
+            <span className="mirrorOverlay" />
+            <span className="mirrorMeta">
+              <span className="mirrorLabel" title="Стеклянный фон">
+                Стеклянный фон
+              </span>
+              <span className="mirrorPill">
+                {makeMirrorBg ? "Убрать" : "Установить"}
+              </span>
+            </span>
+          </button>
+
+          {/* Кнопка 2 — вторая вариация */}
+          <button
+            onClick={() => {
+              changeBackground(
+                'url("https://htmlcolorcodes.com/assets/images/colors/off-white-color-solid-background-1920x1080.png")'
+              );
+            }}
+            className="mirrorCard"
+            style={{
+              width: "100%",
+              aspectRatio: "21 / 9",
+              backgroundImage:
+                'url("https://htmlcolorcodes.com/assets/images/colors/off-white-color-solid-background-1920x1080.png")',
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+            }}
+            aria-label="Выбрать фон: Default фон"
+          >
+            <span className="mirrorOverlay" />
+            <span className="mirrorMeta">
+              <span className="mirrorLabel" title="Default фон">
+                Default фон
+              </span>
+              <span className="mirrorPill">Выбрать</span>
+            </span>
+          </button>
+        </div>
+      </div>
 
       <div className="bg-grid">
         {BACKGROUNDS.map((item) => (

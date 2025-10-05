@@ -45,10 +45,8 @@ export default function DialogVerticalScroll({
       "https://images.wallpaperscraft.ru/image/single/gradient_abstraktsiia_sinij_205793_1920x1080.jpg",
     backgroundUrl12:
       "https://marketplace.canva.com/EAGBzICL4nk/1/0/1600w/canva-pink-and-blue-cute-desktop-wallpaper-EQcU9lTQ_-Q.jpg",
-
     backgroundUrl14:
       "https://zastavki.gas-kvas.com/uploads/posts/2024-06/zastavki-gas-kvas-com-kqij-p-zastavki-v-chat-25.jpg",
-
     backgroundUrl17:
       "https://cutewallpaper.org/21/beach-pictures-wallpaper/Sunset-Beach-Wallpaper-Wallpaper-Stream.jpg",
     backgroundUrl17: "https://bgfons.com/uploads/sky/sky_texture1998.jpg",
